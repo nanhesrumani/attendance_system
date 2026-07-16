@@ -1,0 +1,730 @@
+{% extends "base.html" %}
+{% block title %}Subjects{% endblock %}
+{% block page_title %}Subjects{% endblock %}
+
+{% block content %}
+<!-- FILTER BAR -->
+<div class="d-flex justify-content-end mb-3">
+  <a href="{{ url_for('subj_maint.dedup_page') }}" class="btn btn-outline-danger btn-sm">
+    <i class="bi bi-arrow-left-right"></i> Find &amp; Merge Duplicate Subjects
+  </a>
+</div>
+<div class="card shadow-sm mb-4">
+
+    <div class="card-body">
+
+        <form method="GET" class="row g-2">
+
+            <div class="col-md-4">
+
+                <label class="form-label">
+                    Department
+                </label>
+
+                <select
+                    name="department_id"
+                    class="form-select">
+
+                    <option value="">All</option>
+
+                    {% for d in departments %}
+                    <option
+                        value="{{ d.id }}"
+                        {% if selected_department == d.id|string %}
+                        selected
+                        {% endif %}>
+
+                        {{ d.code }}
+
+                    </option>
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <label class="form-label">
+                    Semester
+                </label>
+
+                <select
+                    name="sem_number"
+                    class="form-select">
+
+                    <option value="">All</option>
+
+                    {% for i in range(1,9) %}
+                    <option
+                        value="{{ i }}"
+                        {% if selected_semester == i|string %}
+                        selected
+                        {% endif %}>
+
+                        Sem {{ i }}
+
+                    </option>
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+            <div class="col-md-4 d-flex align-items-end">
+
+                <button class="btn btn-primary w-100">
+
+                    <i class="bi bi-funnel"></i>
+
+                    Filter
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<div class="card shadow-sm mb-3">
+
+    <div class="card-body">
+
+        <div class="d-flex justify-content-between align-items-center">
+
+            <div>
+
+                <h5 class="fw-bold mb-1">
+
+                    Subject Management
+
+                </h5>
+
+                <small class="text-muted">
+
+                    Create and manage subjects globally
+
+                </small>
+
+            </div>
+
+            <button
+                class="btn btn-success"
+                data-bs-toggle="collapse"
+                data-bs-target="#addSubjectForm">
+
+                <i class="bi bi-plus-circle"></i>
+
+                Add Subject
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="collapse mb-3" id="addSubjectForm">
+
+    <div class="card shadow-sm border-success">
+
+        <div class="card-header bg-white">
+
+            <h5 class="mb-0 fw-bold">
+
+                Add New Subject
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <form
+                method="POST"
+                action="{{ url_for('academic.add_subject') }}">
+
+                <div class="row g-3">
+
+                    <div class="col-md-2">
+
+                        <label class="form-label">
+
+                            Code
+
+                        </label>
+
+                        <input
+                            type="text"
+                            name="code"
+                            class="form-control"
+                            required>
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+
+                            Subject Name
+
+                        </label>
+
+                        <input
+                            type="text"
+                            name="name"
+                            class="form-control"
+                            required>
+
+                    </div>
+
+                    <div class="col-md-2">
+
+                        <label class="form-label">
+
+                            Department
+
+                        </label>
+
+                        <select
+                            name="department_id"
+                            class="form-select">
+
+                            <option value="">
+
+                                General
+
+                            </option>
+
+                            {% for d in departments %}
+
+                            <option value="{{ d.id }}">
+
+                                {{ d.code }}
+
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-2">
+
+                        <label class="form-label">
+
+                            Semester
+
+                        </label>
+
+                        <select
+                            name="sem_number"
+                            class="form-select">
+
+                            <option value="">
+
+                                General
+
+                            </option>
+
+                            {% for i in range(1,9) %}
+
+                            <option value="{{ i }}">
+
+                                Sem {{ i }}
+
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-2">
+
+                        <label class="form-label">
+
+                            Credits
+
+                        </label>
+
+                        <input
+                            type="number"
+                            name="credits"
+                            class="form-control"
+                            value="0">
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            Subject Type
+                        </label>
+
+                        <select
+                            name="subject_type"
+                            class="form-select"
+                            required>
+
+                            <option value="Theory">Theory</option>
+
+                            <option value="Lab">Lab</option>
+
+                            <option value="Theory-Lab-Integrated">
+                                Theory-Lab-Integrated
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <select name="offering_mode" class="form-select" required>
+                        <option value="regular">Mandatory (Core)</option>
+                        <option value="professional_elective">Professional Elective</option>
+                        <option value="open_elective">Open Elective</option>
+                        <option value="ability_enhancement">Ability/Skill Enhancement (AEC/SEC)</option>
+                        </select>
+                    <div class="col-md-3 d-flex align-items-end">
+
+                        <button class="btn btn-success w-100">
+
+                            Save Subject
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+<!-- DEPARTMENTS -->
+
+<div class="card shadow-sm mb-4">
+
+    <div class="card-header bg-white">
+        <h5 class="mb-0 fw-bold">
+            Departments
+        </h5>
+    </div>
+
+    <div class="card-body">
+
+        <div class="row g-3">
+
+            {% for dept in department_overview %}
+
+            <div class="col-md-3">
+
+                <a
+                    href="{{ url_for('academic.subjects') }}?department_id={{ dept.id }}"
+                    class="text-decoration-none">
+
+                    <div class="card border-0 shadow-sm text-center h-100">
+
+                        <div class="card-body">
+
+                            <h6 class="fw-bold">
+                                {{ dept.name }}
+                            </h6>
+
+                            <small class="text-muted">
+                                {{ dept.subject_count }} Subjects
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- SEMESTERS -->
+
+{% if semester_overview %}
+
+<div class="card shadow-sm mb-4">
+
+    <div class="card-header bg-white">
+        <h5 class="mb-0 fw-bold">
+            Semesters
+        </h5>
+    </div>
+
+    <div class="card-body">
+
+        <div class="d-flex gap-2 flex-wrap">
+
+            {% for sem in semester_overview %}
+
+            <a
+                href="{{ url_for('academic.subjects') }}?department_id={{ selected_department }}&sem_number={{ sem.sem_number }}"
+                class="btn btn-outline-primary rounded-pill">
+
+                {% if sem.sem_number %}
+                    Sem {{ sem.sem_number }}
+                {% else %}
+                    General
+                {% endif %}
+
+                <span class="badge bg-primary ms-1">
+                    {{ sem.subject_count }}
+                </span>
+
+            </a>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+<!-- SUBJECTS -->
+
+{% if subject_overview %}
+
+<div class="card shadow-sm mb-4">
+
+    <div class="card-header bg-white">
+        <h5 class="mb-0 fw-bold">
+            Subjects
+        </h5>
+    </div>
+
+    <div class="card-body">
+
+        <div class="row g-3">
+
+            {% for sub in subject_overview %}
+
+            <div class="col-md-3">
+
+                <a
+                    href="{{ url_for('academic.subjects') }}?department_id={{ selected_department }}&sem_number={{ selected_semester }}&subject_id={{ sub.id }}"
+                    class="text-decoration-none">
+
+                    <div class="card border-0 shadow-sm h-100">
+
+                        <div class="card-body">
+
+                            <h6 class="fw-bold">
+                                {{ sub.code }}
+                            </h6>
+
+                            <div class="small text-dark">
+                                {{ sub.name }}
+                            </div>
+
+                            <div class="mt-2">
+
+                                <span class="badge bg-secondary">
+                                    {{ sub.subject_type }}
+                                </span>
+
+                                <span class="badge bg-info text-dark">
+                                    {{ sub.credits }} Credits
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+{% if selected_subject_data %}
+
+<div class="card shadow-sm">
+
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+
+        <div>
+
+            <h5 class="mb-0 fw-bold">
+                {{ selected_subject_data.code }}
+            </h5>
+
+            <small class="text-muted">
+                {{ selected_subject_data.name }}
+            </small>
+
+        </div>
+
+        <span class="badge bg-primary">
+
+            {{ selected_subject_data.subject_type }}
+
+        </span>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row g-4">
+
+            <div class="col-md-3">
+
+                <small class="text-muted d-block">
+                    Department
+                </small>
+
+                <strong>
+                    {{ selected_subject_data.dept_name }}
+                </strong>
+
+            </div>
+
+            <div class="col-md-2">
+
+                <small class="text-muted d-block">
+                    Semester
+                </small>
+
+                <strong>
+                    Sem {{ selected_subject_data.sem_number }}
+                </strong>
+
+            </div>
+
+            <div class="col-md-2">
+
+                <small class="text-muted d-block">
+                    Credits
+                </small>
+
+                <strong>
+                    {{ selected_subject_data.credits }}
+                </strong>
+
+            </div>
+
+            <div class="col-md-5 text-end">
+
+                <button
+                    class="btn btn-outline-primary"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#editSubjectForm">
+
+                    <i class="bi bi-pencil"></i>
+                    Edit
+
+                </button>
+
+                <form
+                    method="POST"
+                    action="{{ url_for('academic.delete_subject', subject_id=selected_subject_data.id) }}"
+                    class="d-inline"
+                    onsubmit="return confirm('Delete this subject?')">
+
+                    <button class="btn btn-outline-danger">
+
+                        <i class="bi bi-trash"></i>
+                        Delete
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- {% endif %}
+
+{% if selected_subject_data %} -->
+
+<div class="collapse mt-3" id="editSubjectForm">
+
+    <div class="card border-0 bg-light">
+
+        <div class="card-body">
+
+            <form
+                method="POST"
+                action="{{ url_for('academic.edit_subject', subject_id=selected_subject_data.id) }}">
+
+                <div class="row g-3">
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">Code</label>
+
+                        <input
+                            type="text"
+                            name="code"
+                            class="form-control"
+                            value="{{ selected_subject_data.code }}"
+                            required>
+
+                    </div>
+
+                    <div class="col-md-5">
+
+                        <label class="form-label">Name</label>
+
+                        <input
+                            type="text"
+                            name="name"
+                            class="form-control"
+                            value="{{ selected_subject_data.name }}"
+                            required>
+
+                    </div>
+
+                    <div class="col-md-2">
+
+                        <label class="form-label">Semester</label>
+
+                        <select
+                            name="sem_number"
+                            class="form-select">
+
+                            <option value="">General</option>
+
+                            {% for i in range(1,9) %}
+
+                            <option
+                                value="{{ i }}"
+                                {% if selected_subject_data.sem_number == i %}
+                                selected
+                                {% endif %}>
+
+                                Sem {{ i }}
+
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-2">
+
+                        <label class="form-label">Credits</label>
+
+                        <input
+                            type="number"
+                            name="credits"
+                            class="form-control"
+                            value="{{ selected_subject_data.credits }}">
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">Department</label>
+
+                        <select
+                            name="department_id"
+                            class="form-select">
+
+                            <option value="">General</option>
+
+                            {% for d in departments %}
+
+                            <option
+                                value="{{ d.id }}"
+                                {% if selected_subject_data.department_id == d.id %}
+                                selected
+                                {% endif %}>
+
+                                {{ d.code }}
+
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">Subject Type</label>
+
+                        <select
+                            name="subject_type"
+                            class="form-select">
+
+                            {% for t in ['Theory','Lab','Lab-Merged','Elective-Theory','Elective-Lab'] %}
+
+                            <option
+                                {% if t == selected_subject_data.subject_type %}
+                                selected
+                                {% endif %}>
+
+                                {{ t }}
+
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-4 d-flex align-items-end">
+
+                        <button class="btn btn-primary w-100">
+
+                            Save Changes
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+{% endif %}
+
+{% endblock %}

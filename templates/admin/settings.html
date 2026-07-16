@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block page_title %}System Settings{% endblock %}
+
+{% block content %}
+<form method="POST" action="{{ url_for('settings.update_settings') }}">
+    {% for cat_name, cat_settings in categories.items() %}
+    {% if cat_settings %}
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-white">
+            <h6 class="mb-0">
+                {% if cat_name == 'General' %}<i class="bi bi-gear"></i>
+                {% elif cat_name == 'Recognition' %}<i class="bi bi-eye"></i>
+                {% elif cat_name == 'Attendance' %}<i class="bi bi-clipboard-check"></i>
+                {% elif cat_name == 'Scheduler' %}<i class="bi bi-clock"></i>
+                {% else %}<i class="bi bi-sliders"></i>{% endif %}
+                {{ cat_name }}
+            </h6>
+        </div>
+        <div class="card-body">
+            {% for s in cat_settings %}
+            <div class="row mb-3 align-items-center">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold mb-0">{{ s.setting_key }}</label>
+                    {% if s.description %}
+                    <br><small class="text-muted">{{ s.description }}</small>
+                    {% endif %}
+                </div>
+                <div class="col-md-5">
+                    <input type="text" class="form-control" name="setting_{{ s.setting_key }}" value="{{ s.setting_value or '' }}">
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted">Updated: {{ s.updated_at.strftime('%Y-%m-%d %H:%M') if s.updated_at else '—' }}</small>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    <div class="d-flex gap-2 mb-4">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Save All Settings</button>
+        <button type="button" class="btn btn-outline-secondary" onclick="reloadModels()"><i class="bi bi-arrow-clockwise"></i> Reload Embeddings</button>
+    </div>
+</form>
+
+<!-- Add Custom Setting -->
+<div class="card shadow-sm mb-4" style="max-width:500px">
+    <div class="card-header bg-white"><h6 class="mb-0"><i class="bi bi-plus-circle"></i> Add Custom Setting</h6></div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('settings.add_setting') }}">
+            <div class="mb-2"><label class="form-label">Key</label><input type="text" class="form-control form-control-sm" name="setting_key" required></div>
+            <div class="mb-2"><label class="form-label">Value</label><input type="text" class="form-control form-control-sm" name="setting_value"></div>
+            <div class="mb-2"><label class="form-label">Description</label><input type="text" class="form-control form-control-sm" name="description"></div>
+            <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-plus"></i> Add</button>
+        </form>
+    </div>
+</div>
+
+<!-- Scheduler Time -->
+<div class="card shadow-sm" style="max-width:500px">
+    <div class="card-header bg-white"><h6 class="mb-0"><i class="bi bi-clock"></i> Auto-Scheduler Time</h6></div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('settings.update_scheduler_time') }}">
+            <div class="mb-3">
+                <label class="form-label">Daily session auto-creation time</label>
+                <input type="time" class="form-control" name="time" value="08:00" style="max-width:200px">
+                <small class="text-muted">Server restart required after change.</small>
+            </div>
+            <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-check"></i> Update</button>
+        </form>
+    </div>
+</div>
+
+<div id="reloadResult" class="mt-3"></div>
+
+<script>
+function reloadModels() {
+    const result = document.getElementById('reloadResult');
+    result.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Reloading...';
+    fetch('{{ url_for("settings.reload_models") }}', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            result.innerHTML = `<div class="alert alert-${data.success ? 'success' : 'danger'} py-2">${data.message}</div>`;
+        }).catch(e => { result.innerHTML = `<div class="alert alert-danger py-2">${e}</div>`; });
+}
+</script>
+{% endblock %}

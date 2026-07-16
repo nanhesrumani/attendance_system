@@ -1,0 +1,85 @@
+{% block content %}
+
+{% if active_tab == "students" %}
+
+<div class="card shadow-sm">
+
+    <div class="card-header">
+
+        <h5 class="mb-0">
+
+            Students
+
+        </h5>
+
+    </div>
+
+    <div class="card-body p-0">
+
+        <table class="table table-hover mb-0">
+
+            <thead>
+
+                <tr>
+
+                    <th>USN</th>
+
+                    <th>SID</th>
+
+                    <th>Student Name</th>
+
+                    <th>Semester</th>
+
+                    <th>Section</th>
+
+                    <th>Status</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+            {% for s in students %}
+
+                <tr>
+
+                    <td>{{ s.usn }}</td>
+
+                    <td>{{ s.sid }}</td>
+
+                    <td>{{ s.name }}</td>
+
+                    <td>{{ s.sem_number }}</td>
+
+                    <td>{{ s.section_label }}</td>
+
+                    <td>{{ s.enrollment_status }}</td>
+
+                </tr>
+
+            {% else %}
+
+                <tr>
+
+                    <td colspan="6" class="text-center text-muted">
+
+                        No students found.
+
+                    </td>
+
+                </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,510 @@
+{% extends "base.html" %}
+{% block title %}Timetable{% endblock %}
+{% block page_title %}Timetable{% endblock %}
+
+{% block content %}
+<!-- ============================= -->
+<!-- Timetable Navigation -->
+<!-- ============================= -->
+
+<!-- Departments -->
+<div class="card shadow-sm mb-4">
+
+    <div class="card-header bg-white">
+        <h5 class="mb-0">
+            <i class="bi bi-building"></i>
+            Departments
+        </h5>
+    </div>
+
+    <div class="card-body">
+
+        <div class="row">
+
+            {% for d in departments %}
+
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+
+                <a
+                    href="{{ url_for('timetable.view_timetable',
+                        department_id=d.id,
+                        sem_number=selected_sem) }}"
+                    class="text-decoration-none">
+
+                    <div class="card h-100
+                        {% if selected_department|string == d.id|string %}
+                            border-primary shadow
+                        {% endif %}">
+
+                        <div class="card-body text-center">
+
+                            <h5 class="fw-bold text-primary mb-1">
+                                {{ d.code }}
+                            </h5>
+
+                            <div class="small text-muted mb-2">
+                                {{ d.name }}
+                            </div>
+
+                            <hr>
+
+                            <span class="badge bg-primary">
+                                {{ d.section_count }}
+                                Sections
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- Semester Filter -->
+
+<div class="card shadow-sm mb-4">
+
+    <div class="card-header bg-white">
+
+        <h6 class="mb-0">
+
+            <i class="bi bi-collection"></i>
+
+            Semester
+
+        </h6>
+
+    </div>
+
+    <div class="card-body">
+
+        {% for sem in semester_cards %}
+
+        <a
+
+            href="{{ url_for('timetable.view_timetable',
+                department_id=selected_department,
+                sem_number=sem.sem_number) }}"
+
+            class="btn sem-btn
+
+            {% if selected_sem|string == sem.sem_number|string %}
+                sem-btn-active
+            {% endif %}
+
+            me-2 mb-2">
+
+            Semester {{ sem.sem_number }}
+
+            <span class="badge bg-light text-dark ms-1">
+
+                {{ sem.total }}
+
+            </span>
+
+        </a>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+
+<!-- Section Cards -->
+
+<div class="row">
+
+{% if section_cards %}
+
+{% for sec in section_cards %}
+
+<div class="col-xl-4 col-lg-6 mb-4">
+
+<div class="card shadow-sm h-100">
+
+<div class="card-header bg-white">
+
+<div class="d-flex justify-content-between align-items-center">
+
+<div>
+
+<h5 class="mb-0">
+
+{{ sec.dept_code }}
+
+-
+
+{{ sec.section_label }}
+
+</h5>
+
+<small class="text-muted">
+
+Semester {{ sec.sem_number }}
+
+</small>
+
+</div>
+
+{% if sec.slot_count > 0 %}
+
+<span class="badge bg-success">
+
+Uploaded
+
+</span>
+
+{% else %}
+
+<span class="badge bg-danger">
+
+Missing
+
+</span>
+
+{% endif %}
+
+</div>
+
+</div>
+
+
+
+<div class="card-body">
+
+<div class="row text-center mb-3">
+
+<div class="col">
+
+<div class="text-muted small">
+
+Subjects
+
+</div>
+
+<h5>
+
+{{ sec.subject_count }}
+
+</h5>
+
+</div>
+
+<div class="col">
+
+<div class="text-muted small">
+
+Slots
+
+</div>
+
+<h5>
+
+{{ sec.slot_count }}
+
+</h5>
+
+</div>
+
+</div>
+
+<hr>
+
+<p class="mb-2">
+
+<strong>Batch :</strong>
+
+{{ sec.batch_label }}
+
+</p>
+
+<p class="mb-3">
+
+<strong>Cluster :</strong>
+
+{{ sec.cluster_name or "Not Assigned" }}
+
+</p>
+
+<div class="d-grid gap-2">
+
+<a
+
+href="{{ url_for('timetable.view_timetable',
+        department_id=selected_department,
+        sem_number=selected_sem,
+        section_id=sec.id) }}"
+
+class="btn btn-primary">
+
+<i class="bi bi-table"></i>
+
+View Timetable
+
+</a>
+
+<a
+
+href="{{ url_for('timetable.upload_timetable',
+        section_id=sec.id) }}"
+
+class="btn btn-outline-success">
+
+<i class="bi bi-upload"></i>
+
+Upload CSV
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+{% else %}
+
+<div class="col-12">
+
+<div class="alert alert-info">
+
+<i class="bi bi-info-circle"></i>
+
+No sections available for the selected filters.
+
+</div>
+
+</div>
+
+{% endif %}
+
+</div>
+
+<hr class="my-4">
+
+{% if selected_section and section_info %}
+<!-- Timetable Grid -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h6 class="mb-0">
+            <i class="bi bi-table"></i>
+            {{ section_info.dept_code }}-{{ section_info.section_label }} Timetable
+        </h6>
+    </div>
+    <div class="card-body p-0">
+        {% for day in days %}
+        {% set slots = timetable_data.get(day, []) %}
+        {% if slots %}
+        <div class="border-bottom">
+            <div class="bg-light px-3 py-2 fw-semibold">
+                <i class="bi bi-calendar-day"></i> {{ day }}
+            </div>
+           <div class="table-responsive px-3"> <table class="table align-middle timetable-table">
+        <thead>
+            <tr class="small text-muted border-bottom">
+                <th style="width: 5px;"></th> <th style="width: 140px">Time</th>
+                <th>Subject</th>
+                <th>Faculty</th>
+                <th>Room</th>
+                <th>Type</th>
+                <th style="width: 80px">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for slot in slots %}
+            {% set accent_class = 'accent-theory' %}
+            {% if slot.slot_type in ['Interval', 'Lunch'] %}{% set accent_class = 'accent-break' %}
+            {% elif slot.slot_type == 'Lab' %}{% set accent_class = 'accent-lab' %}
+            {% elif slot.slot_type == 'Lab-Merged' %}{% set accent_class = 'accent-merged' %}
+            {% endif %}
+
+            <tr class="
+            {% if slot.slot_type in ['Interval','Lunch'] %}table-secondary-soft{% endif %}
+            {% if day == current_day and slot.start_time <= current_time and current_time <= slot.end_time %}
+                <div class="card mb-2 border-success shadow-sm" style="background-color:#e6ffe6;">
+            {% else %}
+                <div class="card mb-2 shadow-sm">
+            {% endif %}
+                <td class="slot-accent {{ accent_class }}"></td>
+                
+                <td>
+                    <div class="time-box shadow-sm">
+                        <small class="fw-bold">
+                            {% if slot.start_time is string %}{{ slot.start_time }}{% else %}{{ '%02d:%02d'|format(slot.start_time.seconds // 3600, (slot.start_time.seconds % 3600) // 60) }}{% endif %}
+                            -
+                            {% if slot.end_time is string %}{{ slot.end_time }}{% else %}{{ '%02d:%02d'|format(slot.end_time.seconds // 3600, (slot.end_time.seconds % 3600) // 60) }}{% endif %}
+                        </small>
+                    </div>
+                </td>
+                
+                <td>
+                    {% if slot.slot_type in ['Interval','Lunch'] %}
+                        <span class="text-muted fw-bold text-uppercase small"><i class="bi bi-clock-history me-1"></i> {{ slot.slot_type }}</span>
+                    {% else %}
+                        <span class="subject-code-tag">{{ slot.subject_code or '—' }}</span>
+                        <small class="text-dark d-block fw-medium mt-1">{{ slot.subject_name or '' }}</small>
+                    {% endif %}
+                </td>
+                
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style="width: 28px; height: 28px;">
+                            <i class="bi bi-person text-primary" style="font-size: 0.8rem;"></i>
+                        </div>
+                        <small class="fw-semibold text-secondary">{{ slot.faculty_name or '—' }}</small>
+                    </div>
+                </td>
+                
+                <td>
+                    <span class="badge border text-dark fw-normal bg-light">
+                        <i class="bi bi-geo-alt text-danger me-1"></i> {{ slot.room or '—' }}
+                    </span>
+                </td>
+                
+                <td>
+                    {% set badge_color = 'primary' %}
+                    {% if slot.slot_type == 'Theory' %}{% set badge_color = 'primary' %}
+                    {% elif slot.slot_type == 'Lab' %}{% set badge_color = 'info' %}
+                    {% elif slot.slot_type == 'Lab-Merged' %}{% set badge_color = 'warning' %}
+                    {% else %}{% set badge_color = 'secondary' %}
+                    {% endif %}
+                    <span class="badge rounded-pill bg-{{ badge_color }}">{{ slot.slot_type }}</span>
+                </td>
+                
+                <td>
+                    <form method="POST" action="{{ url_for('timetable.delete_slot', slot_id=slot.id) }}"
+                          class="d-inline" onsubmit="return confirm('Delete this slot?')">
+                        <input type="hidden" name="section_id" value="{{ selected_section }}">
+                        <button class="btn btn-sm btn-light text-danger shadow-sm border py-1">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Add Slot Modal -->
+<div class="modal fade" id="addSlotModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('timetable.add_slot') }}">
+                <input type="hidden" name="section_id" value="{{ selected_section }}">
+                <div class="modal-header">
+                    <h6 class="modal-title">Add Timetable Slot</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Day *</label>
+                            <select class="form-select" name="day_of_week" required>
+                                {% for d in days %}<option>{{ d }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Slot Type *</label>
+                            <select class="form-select" name="slot_type" id="slotTypeSelect" onchange="toggleSlotFields()">
+                                <option>Theory</option><option>Lab</option>
+                                <option>Lab-Merged</option><option>Interval</option><option>Lunch</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Start Time *</label>
+                            <input type="time" class="form-control" name="start_time" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">End Time *</label>
+                            <input type="time" class="form-control" name="end_time" required>
+                        </div>
+                    </div>
+                    <div id="subjectFields">
+                        <div class="mb-3">
+                            <label class="form-label">Subject</label>
+                            <select class="form-select" name="subject_id" id="subjectSelect">
+                                <option value="">— None —</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Faculty</label>
+                            <select class="form-select" name="faculty_id" id="facultySelect">
+                                <option value="">— None —</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Room</label>
+                        <input type="text" class="form-control" name="room" placeholder="Lab-CR-201">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-plus"></i> Add Slot</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleSlotFields() {
+    const type = document.getElementById('slotTypeSelect').value;
+    const fields = document.getElementById('subjectFields');
+    if (type === 'Interval' || type === 'Lunch') {
+        fields.style.display = 'none';
+    } else {
+        fields.style.display = 'block';
+    }
+}
+
+// Load subjects and faculty when modal opens
+document.getElementById('addSlotModal')?.addEventListener('show.bs.modal', function() {
+    fetch('{{ url_for("timetable.section_data_api", section_id=selected_section) }}')
+        .then(r => r.json())
+        .then(data => {
+            const subSel = document.getElementById('subjectSelect');
+            const facSel = document.getElementById('facultySelect');
+            subSel.innerHTML = '<option value="">— None —</option>';
+            facSel.innerHTML = '<option value="">— None —</option>';
+            data.subjects.forEach(s => {
+                subSel.innerHTML += `<option value="${s.id}">${s.code} — ${s.name}</option>`;
+            });
+            data.faculty.forEach(f => {
+                facSel.innerHTML += `<option value="${f.id}">${f.full_name}</option>`;
+            });
+        });
+});
+</script>
+
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-table fs-1"></i>
+    <p class="mt-2">Select a section above to view its timetable.</p>
+</div>
+{% endif %}
+{% endblock %}

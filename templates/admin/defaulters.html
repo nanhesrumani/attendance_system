@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Defaulters{% endblock %}
+{% block page_title %}Defaulter List (Below {{ threshold }}%){% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{{ url_for('admin_reports.reports_home') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back to Reports</a>
+    <span class="ms-3 text-muted">Threshold: <strong class="text-danger">{{ threshold }}%</strong> | Found: <strong>{{ defaulters|length }}</strong></span>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        {% if defaulters %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle small">
+                <thead class="table-light">
+                    <tr><th>#</th><th>USN</th><th>Name</th><th>Section</th><th>Total</th><th>Present</th><th>%</th></tr>
+                </thead>
+                <tbody>
+                    {% for d in defaulters %}
+                    <tr class="table-danger">
+                        <td>{{ loop.index }}</td>
+                        <td><code>{{ d.usn }}</code></td>
+                        <td>{{ d.full_name }}</td>
+                        <td>{{ d.dept_code or '' }}-{{ d.section_label or '—' }}</td>
+                        <td>{{ d.total_sessions }}</td>
+                        <td>{{ d.present }}</td>
+                        <td><span class="badge bg-danger fs-6">{{ d.percentage }}%</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-check-circle fs-1 text-success"></i>
+            <p class="mt-2">No defaulters found below {{ threshold }}%. 🎉</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

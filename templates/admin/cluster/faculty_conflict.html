@@ -1,0 +1,112 @@
+
+{% extends "base.html" %}
+
+{% block title %}
+Faculty Conflict
+{% endblock %}
+
+{% block content %}
+
+<div class="card shadow-sm">
+
+<div class="card-header bg-warning">
+
+<h4>
+
+Faculty Already Assigned
+
+</h4>
+
+</div>
+
+<div class="card-body">
+
+<p>
+
+These faculty members already belong to another cluster.
+
+</p>
+
+<table class="table">
+
+<thead>
+
+<tr>
+
+<th>Name</th>
+
+<th>Current Cluster</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for f in conflicts %}
+
+<tr>
+
+<td>
+
+{{f.full_name}}
+
+</td>
+
+<td>
+
+{{f.cluster_name}}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+<form
+method="POST"
+action="{{ url_for('academic.update_cluster_faculty',
+cluster_id=cluster_id) }}">
+
+{% for id in selected %}
+
+<input
+type="hidden"
+name="faculty_ids"
+value="{{id}}">
+
+{% endfor %}
+
+<input
+type="hidden"
+name="force_move"
+value="1">
+
+<button
+class="btn btn-danger">
+
+Move Faculty Anyway
+
+</button>
+
+<a
+href="{{ url_for('academic.cluster_workspace',
+cluster_id=cluster_id,
+tab='faculty') }}"
+class="btn btn-secondary">
+
+Cancel
+
+</a>
+
+</form>
+
+</div>
+
+</div>
+
+{% endblock %}

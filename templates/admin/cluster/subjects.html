@@ -1,0 +1,63 @@
+
+{% block content %}
+
+{% if active_tab=="subjects" %}
+
+<div class="card">
+
+<div class="card-header">
+
+<h5>Subjects</h5>
+
+</div>
+
+<div class="card-body">
+
+<table class="table">
+
+<thead>
+
+<tr>
+
+<th>Code</th>
+
+<th>Name</th>
+
+<th>Semester</th>
+
+<th>Type</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for sub in subjects %}
+
+<tr>
+
+<td>{{sub.code}}</td>
+
+<td>{{sub.name}}</td>
+
+<td>{{sub.sem_number}}</td>
+
+<td>{{sub.subject_type}}</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+{% endif %}
+
+
+{% endblock %}

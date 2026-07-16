@@ -1,0 +1,168 @@
+/* ============================================
+   THEME VARIABLES
+   ============================================ */
+:root,
+html[data-theme="light"] {
+  --bg: #f5f6fa;
+  --card: #ffffff;
+  --text: #212529;
+  --text-muted: #6c757d;
+  --border: #dee2e6;
+  --topbar: #ffffff;
+  --sidebar: #1a1d21;
+  --sidebar-hover: #2c3034;
+  --sidebar-active: #0d6efd;
+  --input-bg: #ffffff;
+  --hover-bg: #f1f3f5;
+}
+
+html[data-theme="dark"] {
+  --bg: #111827;
+  --card: #1f2937;
+  --text: #f3f4f6;
+  --text-muted: #9ca3af;
+  --border: #374151;
+  --topbar: #1e293b;
+  --sidebar: #0f172a;
+  --sidebar-hover: #1e293b;
+  --sidebar-active: #2563eb;
+  --input-bg: #1f2937;
+  --hover-bg: #273347;
+}
+
+html[data-theme="graphite"] {
+  --bg: #2b2d31;
+  --card: #36393f;
+  --text: #ececec;
+  --text-muted: #a3a6ab;
+  --border: #4f545c;
+  --topbar: #2f3136;
+  --sidebar: #202225;
+  --sidebar-hover: #3a3d42;
+  --sidebar-active: #3b82f6;
+  --input-bg: #3a3d42;
+  --hover-bg: #3f4248;
+}
+
+/* ============================================
+   GLOBAL FIXUPS FOR DARK / GRAPHITE
+   (targets the hardcoded bg-white / bg-light / text-dark
+   utility classes used across your templates)
+   ============================================ */
+html[data-theme="dark"] .bg-white,
+html[data-theme="dark"] .bg-light,
+html[data-theme="graphite"] .bg-white,
+html[data-theme="graphite"] .bg-light {
+  background-color: var(--card) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] .text-dark,
+html[data-theme="dark"] .text-black,
+html[data-theme="graphite"] .text-dark,
+html[data-theme="graphite"] .text-black {
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] .border,
+html[data-theme="dark"] .border-secondary,
+html[data-theme="dark"] .border-light,
+html[data-theme="graphite"] .border,
+html[data-theme="graphite"] .border-secondary,
+html[data-theme="graphite"] .border-light {
+  border-color: var(--border) !important;
+}
+
+/* Cards / tables / modals / dropdowns / list-groups that don't inherit vars */
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .dropdown-menu,
+html[data-theme="dark"] .list-group-item,
+html[data-theme="dark"] .offcanvas,
+html[data-theme="graphite"] .card,
+html[data-theme="graphite"] .modal-content,
+html[data-theme="graphite"] .dropdown-menu,
+html[data-theme="graphite"] .list-group-item,
+html[data-theme="graphite"] .offcanvas {
+  background-color: var(--card) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+html[data-theme="dark"] .dropdown-item,
+html[data-theme="graphite"] .dropdown-item {
+  color: var(--text) !important;
+}
+html[data-theme="dark"] .dropdown-item:hover,
+html[data-theme="graphite"] .dropdown-item:hover {
+  background-color: var(--hover-bg) !important;
+}
+
+/* Inputs */
+html[data-theme="dark"] .form-control,
+html[data-theme="dark"] .form-select,
+html[data-theme="graphite"] .form-control,
+html[data-theme="graphite"] .form-select {
+  background-color: var(--input-bg) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+html[data-theme="dark"] .form-control::placeholder,
+html[data-theme="graphite"] .form-control::placeholder {
+  color: var(--text-muted) !important;
+}
+
+/* Tables */
+html[data-theme="dark"] .table,
+html[data-theme="graphite"] .table {
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+html[data-theme="dark"] .table > :not(caption) > * > *,
+html[data-theme="graphite"] .table > :not(caption) > * > * {
+  background-color: var(--card) !important;
+  color: var(--text) !important;
+  border-bottom-color: var(--border) !important;
+}
+html[data-theme="dark"] .table-hover tbody tr:hover > *,
+html[data-theme="graphite"] .table-hover tbody tr:hover > * {
+  background-color: var(--hover-bg) !important;
+}
+
+/* Muted text stays legible */
+html[data-theme="dark"] .text-muted,
+html[data-theme="graphite"] .text-muted {
+  color: var(--text-muted) !important;
+}
+
+/* Buttons that were designed only for light bg */
+html[data-theme="dark"] .btn-light,
+html[data-theme="graphite"] .btn-light {
+  background-color: var(--hover-bg) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+html[data-theme="dark"] .btn-outline-secondary,
+html[data-theme="graphite"] .btn-outline-secondary {
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+/* Scrollbar */
+html[data-theme="dark"] ::-webkit-scrollbar-thumb,
+html[data-theme="graphite"] ::-webkit-scrollbar-thumb {
+  background: var(--border);
+}
+
+/* Theme switcher button styling */
+.theme-switch-btn {
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+}
+.theme-switch-btn:hover { background: var(--hover-bg); }
+.theme-option.active { background: var(--hover-bg); font-weight: 600; }

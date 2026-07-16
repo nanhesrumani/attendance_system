@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Faculty Subjects{% endblock %}
+{% block page_title %}Subjects — {{ faculty.full_name }}{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h6 class="mb-0"><i class="bi bi-book"></i> Assigned Subjects for {{ faculty.full_name }} ({{ faculty.faculty_code or '—' }})</h6>
+    </div>
+    <div class="card-body p-0">
+        {% if subjects %}
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light"><tr><th>Code</th><th>Subject</th><th>Section</th><th>Type</th><th>Period</th></tr></thead>
+            <tbody>
+                {% for s in subjects %}
+                <tr>
+                    <td><code>{{ s.subject_code }}</code></td>
+                    <td>{{ s.subject_name }}</td>
+                    <td>{{ s.dept_code }}-{{ s.section_label }}</td>
+                    <td><span class="badge bg-secondary">{{ s.subject_type }}</span></td>
+                    <td><small>{{ s.period_name }}</small></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-4 text-muted">No subjects assigned.</div>
+        {% endif %}
+    </div>
+</div>
+<a href="{{ url_for('faculty_mgmt.list_faculty') }}" class="btn btn-outline-secondary mt-3"><i class="bi bi-arrow-left"></i> Back</a>
+{% endblock %}

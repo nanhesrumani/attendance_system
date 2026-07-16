@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <div class="row">
+
+        <!-- ================= PROFILE CARD ================= -->
+
+        <div class="col-lg-4">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-body text-center">
+
+                    {% if profile.profile_photo %}
+                        <img src="{{ url_for('static', filename=profile.profile_photo) }}"
+                             class="rounded-circle mb-3"
+                             width="150"
+                             height="150">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='img/default-user.png') }}"
+                             class="rounded-circle mb-3"
+                             width="150"
+                             height="150">
+                    {% endif %}
+
+                    <h4>{{ profile.full_name }}</h4>
+
+                    <p class="text-muted mb-1">
+                        {{ profile.designation }}
+                    </p>
+
+                    <span class="badge bg-primary">
+                        {{ profile.department_code }}
+                    </span>
+
+                    <hr>
+
+                    <table class="table table-borderless text-start">
+
+                        <tr>
+                            <th width="45%">Faculty Code</th>
+                            <td>{{ profile.faculty_code }}</td>
+                        </tr>
+
+                        <tr>
+                            <th>Department</th>
+                            <td>{{ profile.department_name }}</td>
+                        </tr>
+
+                        <tr>
+                            <th>Status</th>
+
+                            <td>
+
+                                {% if profile.status=="active" %}
+
+                                    <span class="badge bg-success">
+
+                                        Active
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge bg-danger">
+
+                                        Suspended
+
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>Last Login</th>
+
+                            <td>
+
+                                {{ profile.last_login or "-" }}
+
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th>Password Changed</th>
+
+                            <td>
+
+                                {{ profile.password_changed_at or "-" }}
+
+                            </td>
+
+                        </tr>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ================= UPDATE PROFILE ================= -->
+
+        <div class="col-lg-8">
+
+            <div class="card shadow-sm border-0 mb-4">
+
+                <div class="card-header bg-primary text-white">
+
+                    <h5 class="mb-0">
+
+                        Update Profile
+
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('faculty.update_profile') }}">
+
+                        <div class="row">
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label">
+
+                                    Full Name
+
+                                </label>
+
+                                <input
+                                    class="form-control"
+                                    value="{{ profile.full_name }}"
+                                    readonly>
+
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label">
+
+                                    Faculty Code
+
+                                </label>
+
+                                <input
+                                    class="form-control"
+                                    value="{{ profile.faculty_code }}"
+                                    readonly>
+
+                            </div>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Email
+
+                            </label>
+
+                            <input
+                                type="email"
+                                class="form-control"
+                                name="email"
+                                value="{{ profile.email }}"
+                                required>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Phone
+
+                            </label>
+
+                            <input
+                                class="form-control"
+                                name="phone"
+                                value="{{ profile.phone or '' }}">
+
+                        </div>
+
+                        <button class="btn btn-success">
+
+                            <i class="bi bi-check-circle"></i>
+
+                            Save Changes
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+            <!-- ================= PASSWORD ================= -->
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-header bg-warning">
+
+                    <h5 class="mb-0">
+
+                        Change Password
+
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('faculty.change_password') }}">
+
+                        <div class="mb-3">
+
+                            <label>
+
+                                Current Password
+
+                            </label>
+
+                            <input
+                                type="password"
+                                class="form-control"
+                                name="current_password"
+                                required>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label>
+
+                                New Password
+
+                            </label>
+
+                            <input
+                                type="password"
+                                class="form-control"
+                                name="new_password"
+                                required>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label>
+
+                                Confirm Password
+
+                            </label>
+
+                            <input
+                                type="password"
+                                class="form-control"
+                                name="confirm_password"
+                                required>
+
+                        </div>
+
+                        <button class="btn btn-warning">
+
+                            <i class="bi bi-key-fill"></i>
+
+                            Change Password
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

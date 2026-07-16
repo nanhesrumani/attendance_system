@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+{% block title %}Session — {{ session.subject_code or 'View' }}{% endblock %}
+{% block page_title %}Session #{{ session.id }} — {{ session.subject_code or '' }} {{ session.subject_name or '' }}{% endblock %}
+
+{% block content %}
+<!-- Session Info Bar -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body py-2">
+        <div class="row align-items-center small">
+            <div class="col-md-2"><strong>Date:</strong> {{ session.session_date }}</div>
+            <div class="col-md-2"><strong>Time:</strong> {{ session.start_time }} - {{ session.end_time }}</div>
+            <div class="col-md-2"><strong>Section:</strong> {{ session.dept_code }}-{{ session.section_label }}</div>
+            <div class="col-md-2"><strong>Room:</strong> {{ session.room or '—' }}</div>
+            <div class="col-md-2"><strong>Faculty:</strong> {{ session.faculty_name or '—' }}</div>
+            <div class="col-md-2">
+                <strong>Status:</strong>
+                <span class="badge bg-{{ 'success' if session.status == 'active' else 'primary' if session.status == 'scheduled' else 'secondary' }}">
+                    {{ session.status|title }}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Left: Attendance List -->
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">
+                    <i class="bi bi-people"></i> Attendance
+                    <span class="badge bg-success ms-2">{{ present_count }}</span>
+                    <span class="badge bg-danger ms-1">{{ absent_count }}</span>
+                    <span class="text-muted small ms-2">/ {{ total_count }}</span>
+                </h6>
+                <div class="d-flex align-items-center gap-1">
+                    <div class="btn-group btn-group-sm">
+                        <form method="POST" action="{{ url_for('session_view.mark_all_present', session_id=session.id) }}" class="d-inline"
+                              onsubmit="return confirm('Mark ALL students present?')">
+                            <button class="btn btn-outline-success btn-sm">
+                                <i class="bi bi-check-all"></i> All Present
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ url_for('session_view.mark_all_absent', session_id=session.id) }}" class="d-inline"
+                              onsubmit="return confirm('Mark ALL students absent?')">
+                            <button class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-x-lg"></i> All Absent
+                            </button>
+                        </form>
+                    </div>
+                    <!-- Sheet Upload Button — outside btn-group so modal renders at body level -->
+                    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#sheetUploadModal">
+                        <i class="bi bi-camera"></i> Upload Sheet
+                    </button>
+                    <button class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#classroomPhotoModal">
+                        <i class="bi bi-images"></i> Photo Recognition
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-body p-0" id="attendanceContainer">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle small" id="attendanceTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th><th>USN</th><th>Name</th><th>Status</th>
+                                <th>Method</th><th>Score</th><th>Time</th><th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in attendance %}
+                            <tr class="{{ 'table-success' if a.status == 'present' else 'table-danger' }}" id="row-{{ a.student_id }}">
+                                <td>{{ loop.index }}</td>
+                                <td><code>{{ a.usn }}</code></td>
+                                <td>{{ a.full_name }}</td>
+                                <td>
+                                    {% if a.status == 'present' %}
+                                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> Present</span>
+                                    {% else %}
+                                    <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Absent</span>
+                                    {% endif %}
+                                    {% if a.is_spoof_attempt %}
+                                    <span class="badge bg-warning"><i class="bi bi-shield-exclamation"></i> Spoof</span>
+                                    {% endif %}
+                                </td>
+                                <td><small class="text-muted">{{ a.method or '—' }}</small></td>
+                                <td>
+                                    {% if a.recognition_score %}
+                                    <small>R:{{ '%.2f'|format(a.recognition_score) }}</small>
+                                    {% endif %}
+                                    {% if a.liveness_score %}
+                                    <small class="text-info">L:{{ '%.2f'|format(a.liveness_score) }}</small>
+                                    {% endif %}
+                                </td>
+                                <td><small>{{ a.marked_at.strftime('%H:%M:%S') if a.marked_at else '—' }}</small></td>
+                                <td>
+                                    <form method="POST"
+                                          action="{{ url_for('session_view.toggle_attendance', session_id=session.id, student_id=a.student_id) }}"
+                                          class="d-inline">
+                                        <button class="btn btn-sm btn-outline-{{ 'danger' if a.status == 'present' else 'success' }}"
+                                                title="{{ 'Mark Absent' if a.status == 'present' else 'Mark Present' }}">
+                                            <i class="bi bi-{{ 'x' if a.status == 'present' else 'check' }}"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: Controls & Live Feed -->
+    <div class="col-md-4">
+        <!-- Recognition Control -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-white">
+                <h6 class="mb-0"><i class="bi bi-eye"></i> Recognition</h6>
+            </div>
+            <div class="card-body">
+                {% if stream_running %}
+                <div class="alert alert-success py-2 small mb-2">
+                    <i class="bi bi-broadcast"></i> Recognition is <strong>LIVE</strong>
+                    {% if stream_status.stats %}
+                    <br>FPS: {{ stream_status.stats.fps }} | Present: {{ stream_status.stats.present_count }}
+                    {% endif %}
+                </div>
+
+                <!-- Live Video -->
+                <div class="mb-2">
+                    <img src="{{ url_for('recognition.mjpeg_stream', session_id=session.id) }}"
+                         class="img-fluid rounded border" style="max-height:300px; width:100%; object-fit:contain;"
+                         alt="Live Feed" onerror="this.src=''; this.alt='Stream unavailable';">
+                </div>
+
+                <form method="POST" action="{{ url_for('session_view.faculty_stop_recognition', session_id=session.id) }}">
+                    <button class="btn btn-danger w-100"><i class="bi bi-stop-fill"></i> Stop Recognition</button>
+                </form>
+                {% else %}
+                <p class="text-muted small">Start face recognition for this session.</p>
+                <form method="POST" action="{{ url_for('session_view.faculty_start_recognition', session_id=session.id) }}">
+                    <div class="mb-2">
+                        <select class="form-select form-select-sm" name="camera_id" onchange="fillRtspFac(this)">
+                            <option value="">— Manual RTSP —</option>
+                            {% for c in cameras %}
+                            <option value="{{ c.id }}" data-rtsp="{{ c.rtsp_url }}">
+                              {{ c.name }}{% if c.assigned_section_id %} - {{ c.dept_code }}-{{ c.section_label }}{% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <input type="text" class="form-control form-control-sm" name="rtsp_url" id="facRtsp"
+                               value="{{ session.rtsp_url or '' }}" placeholder="rtsp://192.168.1.x:554/">
+                    </div>
+                    <button type="submit" class="btn btn-success w-100"><i class="bi bi-play-fill"></i> Start Recognition</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Dismiss Class -->
+        {% if session.status in ['scheduled', 'active'] %}
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-white"><h6 class="mb-0"><i class="bi bi-x-circle"></i> Dismiss Class</h6></div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('session_view.dismiss_class', session_id=session.id) }}"
+                      onsubmit="return confirm('Dismiss this class?')">
+                    <div class="mb-2">
+                        <textarea class="form-control form-control-sm" name="reason" rows="2" placeholder="Reason (optional)..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-warning w-100"><i class="bi bi-x-circle"></i> Dismiss</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Attendance Summary -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white"><h6 class="mb-0"><i class="bi bi-pie-chart"></i> Summary</h6></div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <h4 class="text-success fw-bold mb-0">{{ present_count }}</h4>
+                        <small class="text-muted">Present</small>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="text-danger fw-bold mb-0">{{ absent_count }}</h4>
+                        <small class="text-muted">Absent</small>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="fw-bold mb-0">{{ total_count }}</h4>
+                        <small class="text-muted">Total</small>
+                    </div>
+                </div>
+                {% set pct = ((present_count) / (total_count or 1) * 100)|round|int %}
+                <div class="progress mt-3" style="height:25px">
+                    <div class="progress-bar bg-success" style="width:{{ pct }}%">{{ pct }}%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Back Button -->
+<div class="mt-3">
+    <a href="{{ url_for('faculty.dashboard') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<!-- ============================================
+     Sheet Upload Modal — placed at body level,
+     OUTSIDE all cards/btn-groups so Bootstrap
+     can render the backdrop correctly.
+     ============================================ -->
+<div class="modal fade" id="sheetUploadModal" tabindex="-1" aria-labelledby="sheetUploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST"
+                  action="{{ url_for('session_view.upload_attendance_sheet', session_id=session.id) }}"
+                  enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="sheetUploadModalLabel">
+                        <i class="bi bi-camera"></i> Upload Attendance Sheet
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">
+                        Take a clear photo of the handwritten attendance sheet.
+                        USNs or student names will be read automatically and matched
+                        against this class.
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Sheet Image</label>
+                        <input type="file" name="sheet_image"
+                               class="form-control" accept=".jpg,.jpeg,.png,.webp" required
+                               onchange="previewSheetImage(this)">
+                        <div class="form-text">Accepted: JPG, PNG, WEBP. Keep image well-lit and flat.</div>
+                    </div>
+                    <!-- Live preview of selected image -->
+                    <div id="sheetPreviewContainer" class="text-center d-none">
+                        <img id="sheetPreviewImg" src="" alt="Preview"
+                             class="img-fluid rounded border" style="max-height: 220px;">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-upload"></i> Upload & Extract
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+     Classroom Photo Recognition Modal — body level,
+     same pattern as sheetUploadModal.
+     ============================================ -->
+<div class="modal fade" id="classroomPhotoModal" tabindex="-1" aria-labelledby="classroomPhotoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST"
+                  action="{{ url_for('session_view.upload_classroom_photo', session_id=session.id) }}"
+                  enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="classroomPhotoModalLabel">
+                        <i class="bi bi-images"></i> Classroom Photo Recognition
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">
+                        Take 1 photo for small classes. For wide/large classrooms (e.g. 70 students),
+                        take 2-3 photos covering different sections of the room. Faces will be
+                        detected and matched automatically.
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Classroom Photo(s)</label>
+                        <input type="file" name="classroom_photos"
+                               class="form-control" accept=".jpg,.jpeg,.png,.webp"
+                               multiple required
+                               onchange="previewClassroomPhotos(this)">
+                        <div class="form-text">Up to 3 photos. Hold camera steady, keep faces visible.</div>
+                    </div>
+                    <div id="classroomPreviewContainer" class="d-flex flex-wrap gap-2"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-upload"></i> Upload & Recognize
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function fillRtspFac(select) {
+    const opt = select.options[select.selectedIndex];
+    document.getElementById('facRtsp').value = opt.getAttribute('data-rtsp') || '';
+}
+
+// Show a preview thumbnail before uploading
+function previewSheetImage(input) {
+    const container = document.getElementById('sheetPreviewContainer');
+    const img = document.getElementById('sheetPreviewImg');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            img.src = e.target.result;
+            container.classList.remove('d-none');
+        };
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        container.classList.add('d-none');
+        img.src = '';
+    }
+}
+
+function previewClassroomPhotos(input) {
+    const container = document.getElementById('classroomPreviewContainer');
+    container.innerHTML = '';
+    if (!input.files || !input.files.length) return;
+
+    Array.from(input.files).slice(0, 3).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'rounded border';
+            img.style.maxHeight = '120px';
+            img.style.maxWidth = '120px';
+            img.style.objectFit = 'cover';
+            container.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+{% if stream_running %}
+// Auto-refresh attendance every 5 seconds when streaming
+setInterval(function() {
+    fetch('{{ url_for("session_view.attendance_data_api", session_id=session.id) }}')
+        .then(r => r.json())
+        .then(data => {
+            document.querySelector('.text-success.fw-bold.mb-0').textContent = data.present;
+            document.querySelector('.text-danger.fw-bold.mb-0').textContent = data.absent;
+            data.attendance.forEach(a => {
+                const row = document.getElementById('row-' + a.student_id);
+                if (row) {
+                    row.className = a.status === 'present' ? 'table-success' : 'table-danger';
+                }
+            });
+        })
+        .catch(() => {});
+}, 5000);
+{% endif %}
+</script>
+{% endblock %}

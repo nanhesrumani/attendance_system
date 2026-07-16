@@ -1,0 +1,189 @@
+{% block content %}
+
+<!-- {% if active_tab=="faculty" %}
+
+<div class="card">
+
+<div class="card-header">
+
+<h5>Faculty Members</h5>
+
+</div>
+
+<div class="card-body">
+
+<table class="table">
+
+<thead>
+
+<tr>
+
+<th>Name</th>
+
+<th>Code</th>
+
+<th>Designation</th>
+
+<th>Qualification</th>
+
+<th>Specialization</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for f in faculty %}
+
+<tr>
+
+<td>{{f.full_name}}</td>
+
+<td>{{f.faculty_code}}</td>
+
+<td>{{f.designation}}</td>
+
+<td>{{f.qualification}}</td>
+
+<td>{{f.specialization}}</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+{% endif %} -->
+
+<form
+method="POST"
+action="{{ url_for('academic.update_cluster_faculty',
+cluster_id=cluster.id) }}">
+
+<div class="card shadow-sm">
+
+<div class="card-header">
+
+<h5>
+
+Manage Faculty
+
+</h5>
+
+</div>
+
+<div class="card-body">
+<input
+
+type="text"
+
+id="facultySearch"
+
+class="form-control mb-3"
+
+placeholder="Search faculty...">
+<div class="row">
+
+{% for f in all_faculty %}
+
+<div class="col-md-4 mb-2">
+
+<div class="form-check">
+
+<input
+
+class="form-check-input"
+
+type="checkbox"
+
+name="faculty_ids"
+
+value="{{f.id}}"
+
+{% if f.cluster_id==cluster.id %}
+checked
+{% endif %}
+
+>
+
+<label
+class="form-check-label">
+
+<b>
+
+{{f.full_name}}
+
+</b>
+
+<br>
+
+<small>
+
+{{f.faculty_code}}
+
+|
+
+{{f.designation}}
+
+</small>
+
+</label>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+<hr>
+
+<button
+class="btn btn-primary">
+
+Save Faculty Assignment
+
+</button>
+
+</div>
+
+</div>
+
+</form>
+
+{% endblock %}
+
+<script>
+
+document
+.getElementById("facultySearch")
+.addEventListener("keyup",function(){
+
+let value=this.value.toLowerCase();
+
+document
+.querySelectorAll(".form-check")
+.forEach(function(item){
+
+item.parentElement.style.display=
+item.innerText
+.toLowerCase()
+.includes(value)
+?
+"block"
+:
+"none";
+
+});
+
+});
+
+</script>

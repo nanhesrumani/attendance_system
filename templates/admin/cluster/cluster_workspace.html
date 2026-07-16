@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ cluster.cluster_name }}
+{% endblock %}
+
+{% block page_title %}
+{{ cluster.cluster_name }}
+{% endblock %}
+
+{% block content %}
+
+<div class="card shadow-sm mb-4">
+
+    <div class="card-body">
+
+        <a href="{{ url_for('academic.department_workspace',
+                            dept_id=cluster.department_id,
+                            tab='clusters') }}"
+           class="btn btn-outline-secondary btn-sm mb-3">
+
+            <i class="bi bi-arrow-left"></i>
+
+            Back to Department
+
+        </a>
+
+        <h2 class="mb-1">
+
+            {{ cluster.cluster_name }}
+
+        </h2>
+
+        <h5 class="text-muted">
+
+            {{ cluster.department_name }}
+
+        </h5>
+
+        <hr>
+
+        <div class="row">
+
+            <div class="col-md-4">
+
+                <strong>Cluster Head</strong><br>
+
+                {{ cluster.cluster_head or "Not Assigned" }}
+
+            </div>
+
+            <div class="col-md-4">
+
+                <strong>Created</strong><br>
+
+                {{ cluster.created_at.strftime("%d-%m-%Y") if cluster.created_at else "-" }}
+
+            </div>
+
+            <div class="col-md-4">
+
+                <strong>Remarks</strong><br>
+
+                {{ cluster.remarks or "-" }}
+
+            </div>
+            
+            <a
+            class="btn btn-outline-primary btn-sm"
+            href="{{ url_for('academic.edit_cluster',
+            cluster_id=cluster.id) }}"
+
+            <i class="bi bi-pencil"></i>
+
+            Edit
+
+            </a>
+        </div>
+
+    </div>
+
+</div>
+<a
+class="btn btn-outline-primary btn-sm"
+href="{{ url_for('academic.edit_cluster',
+cluster_id=cluster.id) }}"
+
+<i class="bi bi-pencil"></i>
+
+Edit
+
+</a>
+
+<form
+method="POST"
+action="{{ url_for('academic.delete_cluster',
+cluster_id=cluster.id) }}"
+style="display:inline;">
+
+<button
+type="submit"
+class="btn btn-outline-danger btn-sm"
+
+onclick="return confirm(
+'Delete this cluster?'
+);">
+
+<i class="bi bi-trash"></i>
+
+Delete
+
+</button>
+
+</form>
+
+</a>
+
+<ul class="nav nav-tabs mb-3">
+    {% for key, label, icon in [
+        ('overview', 'Overview', 'bi-speedometer2'),
+        ('curriculum', 'Curriculum', 'bi-journal-bookmark'),
+        ('reports', 'Reports', 'bi-bar-chart-line')
+    ] %}
+    <li class="nav-item">
+        <a class="nav-link {{ 'active' if tab == key }}"
+           href="{{ url_for('academic.cluster_workspace',
+                            cluster_id=cluster.id,
+                            tab=key) }}">
+            <i class="bi {{ icon }}"></i>
+            {{ label }}
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+
+<div class="row mb-4">
+
+<div class="col-md-3">
+
+<a href="{{ url_for('academic.cluster_workspace',
+cluster_id=cluster.id,
+tab='faculty') }}"
+class="text-decoration-none">
+
+<div class="card shadow-sm h-100">
+
+<div class="card-body text-center">
+
+<h2>{{ stats.faculty }}</h2>
+
+<p class="mb-0">
+
+Faculty
+
+</p>
+
+</div>
+
+</div>
+
+</a>
+
+</div>
+
+<div class="col-md-3">
+
+<a href="{{ url_for('academic.cluster_workspace',
+cluster_id=cluster.id,
+tab='sections') }}"
+class="text-decoration-none">
+
+<div class="card shadow-sm h-100">
+
+<div class="card-body text-center">
+
+<h2>{{ stats.sections }}</h2>
+
+<p>
+
+Sections
+
+</p>
+
+ 
+
+</div>
+
+</div>
+
+</a>
+
+</div>
+
+<div class="col-md-3">
+
+<a href="{{ url_for('academic.cluster_workspace',
+cluster_id=cluster.id,
+tab='students') }}"
+class="text-decoration-none">
+
+<div class="card shadow-sm h-100">
+
+<div class="card-body text-center">
+
+<h2>{{ stats.students }}</h2>
+
+<p>
+
+Students
+
+</p>
+
+</div>
+
+</div>
+
+</a>
+
+</div>
+
+<div class="col-md-3">
+
+<a href="{{ url_for('academic.cluster_workspace',
+cluster_id=cluster.id,
+tab='subjects') }}"
+class="text-decoration-none">
+
+<div class="card shadow-sm h-100">
+
+<div class="card-body text-center">
+
+<h2>{{ stats.subjects }}</h2>
+
+<p>
+
+Subjects
+
+</p>
+
+</div>
+
+</div>
+
+</a>
+
+</div>
+
+</div>
+
+
+{% if active_tab=="faculty" %}
+
+    {% include "admin/cluster/faculty.html" %}
+
+{% elif active_tab=="sections" %}
+
+    {% include "admin/cluster/sections.html" %}
+
+{% elif active_tab=="students" %}
+
+    {% include "admin/cluster/students.html" %}
+
+{% elif active_tab=="subjects" %}
+
+    {% include "admin/cluster/subjects.html" %}
+
+{% elif active_tab=="curriculum" %}
+
+    {% include "admin/cluster/curriculum.html" %}
+
+{% elif active_tab=="reports" %}
+
+    {% include "admin/cluster/reports.html" %}
+
+{% endif %}
+
+{% endblock %}

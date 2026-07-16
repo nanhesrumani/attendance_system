@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+
+{% block title %}Create Session{% endblock %}
+{% block page_title %}Create Session{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+  <!-- Header -->
+
+  <div class="card border-0 shadow-sm mb-4">
+
+    <div class="card-body">
+
+      <div class="d-flex justify-content-between align-items-center">
+
+        <div>
+
+          <h4 class="mb-1">
+            Create New Session
+          </h4>
+
+          <div class="text-muted small">
+            Create manual sessions across departments and sections
+          </div>
+
+        </div>
+
+        <a href="{{ url_for('sessions.list_sessions') }}"
+           class="btn btn-outline-secondary btn-sm">
+
+          <i class="bi bi-arrow-left"></i>
+          Back to Sessions
+
+        </a>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Create Form -->
+
+  <div class="card border-0 shadow-sm">
+
+    <div class="card-body">
+
+      <form method="POST">
+
+        <div class="row g-3">
+
+          <!-- Session Title -->
+
+          <div class="col-md-6">
+
+            <label class="form-label fw-semibold">
+              Session Title
+            </label>
+
+            <input type="text"
+                   name="title"
+                   class="form-control"
+                   placeholder="Optional session title">
+
+          </div>
+
+          <!-- Session Type -->
+
+          <div class="col-md-3">
+
+            <label class="form-label fw-semibold">
+              Session Type
+            </label>
+
+            <select name="session_type"
+                    class="form-select">
+
+              <option value="regular">Regular</option>
+              <option value="workshop">Workshop</option>
+              <option value="seminar">Seminar</option>
+              <option value="makeup">Makeup</option>
+              <option value="exam">Exam</option>
+              <option value="other">Other</option>
+
+            </select>
+
+          </div>
+
+          <!-- Date -->
+
+          <div class="col-md-3">
+
+            <label class="form-label fw-semibold">
+              Session Date
+            </label>
+
+            <input type="date"
+                   name="session_date"
+                   class="form-control"
+                   required>
+
+          </div>
+
+          <!-- Start Time -->
+
+          <div class="col-md-3">
+
+            <label class="form-label fw-semibold">
+              Start Time
+            </label>
+
+            <input type="time"
+                   name="start_time"
+                   class="form-control"
+                   required>
+
+          </div>
+
+          <!-- End Time -->
+
+          <div class="col-md-3">
+
+            <label class="form-label fw-semibold">
+              End Time
+            </label>
+
+            <input type="time"
+                   name="end_time"
+                   class="form-control"
+                   required>
+
+          </div>
+
+          <!-- Faculty -->
+
+          <div class="col-md-6">
+
+            <label class="form-label fw-semibold">
+              Faculty
+            </label>
+
+            <select name="faculty_id"
+                    class="form-select">
+
+              <option value="">
+                Select Faculty
+              </option>
+
+              {% for f in faculty_list %}
+
+              <option value="{{ f.id }}">
+                {{ f.full_name }}
+              </option>
+
+              {% endfor %}
+
+            </select>
+
+          </div>
+
+          <!-- Subject -->
+
+          <div class="col-md-6">
+
+            <label class="form-label fw-semibold">
+              Subject
+            </label>
+
+            <select name="subject_id"
+                    class="form-select">
+
+              <option value="">
+                Select Subject
+              </option>
+
+              {% for s in subjects %}
+
+              <option value="{{ s.id }}">
+                {{ s.code }} - {{ s.name }}
+              </option>
+
+              {% endfor %}
+
+            </select>
+
+          </div>
+
+          <!-- Sections -->
+
+          <div class="col-12">
+
+            <label class="form-label fw-semibold">
+              Session Roster Source
+            </label>
+
+            <div class="btn-group d-flex mb-3" role="group">
+              <input type="radio" class="btn-check" name="roster_mode" id="modeSection" value="section" checked>
+              <label class="btn btn-outline-primary" for="modeSection">Regular Section(s)</label>
+
+              <input type="radio" class="btn-check" name="roster_mode" id="modeElective" value="elective">
+              <label class="btn btn-outline-primary" for="modeElective">Elective / Split Group</label>
+            </div>
+
+            <!-- Elective/split group picker: only meaningful once a Subject is chosen above,
+                 since groups are created per-subject (professional elective, open elective,
+                 or a lab split like DevOps/GenAI). -->
+            <div id="electiveGroupBox" class="border rounded p-3 mb-3 d-none">
+              <label class="form-label fw-semibold">Elective / Split Group</label>
+              <select name="elective_group_id" id="electiveGroupSelect" class="form-select">
+                <option value="">Select a subject above first…</option>
+              </select>
+              <div class="form-text">
+                Roster comes from that group's enrolled students (spans sections for
+                electives, or is a subset of one section for a lab split).
+                Don't see the group you need? Create it first on the
+                <a href="{{ url_for('electives.manage_page') }}" target="_blank">Elective Groups</a> page.
+              </div>
+            </div>
+
+            <div id="sectionPickerBox">
+              <label class="form-label fw-semibold">
+                Select Sections
+              </label>
+
+              <div class="border rounded p-3">
+
+                <div class="row g-2">
+
+                  {% for sec in sections %}
+
+                  <div class="col-md-3">
+
+                    <div class="form-check border rounded p-2">
+
+                      <input class="form-check-input"
+                             type="checkbox"
+                             name="section_ids"
+                             value="{{ sec.id }}"
+                             id="sec{{ sec.id }}">
+
+                      <label class="form-check-label w-100"
+                             for="sec{{ sec.id }}">
+
+                        <strong>
+                          {{ sec.dept_code }}
+                        </strong>
+
+                        - {{ sec.sem_number }}{{ sec.section_label }}
+
+                      </label>
+
+                    </div>
+
+                  </div>
+
+                  {% endfor %}
+
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Submit -->
+
+          <div class="col-12">
+
+            <div class="d-flex justify-content-end gap-2 mt-3">
+
+              <a href="{{ url_for('sessions.list_sessions') }}"
+                 class="btn btn-light">
+
+                Cancel
+
+              </a>
+
+              <button type="submit"
+                      class="btn btn-success">
+
+                <i class="bi bi-plus-circle"></i>
+
+                Create Session
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const electiveBox = document.getElementById("electiveGroupBox");
+const sectionBox  = document.getElementById("sectionPickerBox");
+const groupSelect = document.getElementById("electiveGroupSelect");
+const subjectSelect = document.querySelector('select[name="subject_id"]');
+
+document.querySelectorAll('input[name="roster_mode"]').forEach(r => {
+  r.addEventListener("change", () => {
+    const useElective = document.getElementById("modeElective").checked;
+    electiveBox.classList.toggle("d-none", !useElective);
+    sectionBox.classList.toggle("d-none", useElective);
+    if (useElective) loadGroupsForSubject();
+  });
+});
+
+subjectSelect.addEventListener("change", () => {
+  if (document.getElementById("modeElective").checked) loadGroupsForSubject();
+});
+
+function loadGroupsForSubject() {
+  const subjectId = subjectSelect.value;
+  if (!subjectId) {
+    groupSelect.innerHTML = '<option value="">Select a subject above first…</option>';
+    return;
+  }
+  groupSelect.innerHTML = '<option value="">Loading…</option>';
+  fetch(`/admin/electives/groups?subject_id=${subjectId}`)
+    .then(r => r.json())
+    .then(data => {
+      const groups = data.groups || [];
+      if (!groups.length) {
+        groupSelect.innerHTML = '<option value="">No groups exist for this subject yet</option>';
+        return;
+      }
+      groupSelect.innerHTML =
+          '<option value="">Select group…</option>' +
+          groups.map(g => `
+              <option value="${g.id}">
+                  ${g.group_type.replace('_', ' ')}
+                  ${g.cluster_name ? ' — ' + g.cluster_name : ''}
+                  ${g.dept_code ? ' — ' + g.dept_code : ''}
+                  (${g.enrolled_count} enrolled)
+              </option>
+          `).join("");
+    })
+    .catch(() => groupSelect.innerHTML = '<option value="">Could not load groups</option>');
+}
+</script>
+{% endblock %}

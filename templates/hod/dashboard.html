@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}HOD Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="row mb-4">
+    <div class="col">
+        <h4 class="fw-bold">HOD Dashboard - {{ department_name or 'Your Department' }}</h4>
+        {% if current_user.is_hod %}
+        <span class="badge bg-warning">HOD + Faculty</span>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Stats Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm border-start border-warning border-4 text-center p-3">
+            <h5>Sections</h5>
+            <h2 class="text-warning">{{ sections|default(0) }}</h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-start border-primary border-4 text-center p-3">
+            <h5>Faculty</h5>
+            <h2 class="text-primary">{{ faculty|default(0) }}</h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-start border-success border-4 text-center p-3">
+            <h5>My Classes</h5>
+            <h2 class="text-success">{{ my_subjects|default(0) }}</h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-start border-info border-4 text-center p-3">
+            <h5>Today's Sessions</h5>
+            <h2 class="text-info">{{ todays_sessions|default(0) }}</h2>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions (FIXED ROW) -->
+<div class="row g-3 mb-4">
+
+    <div class="col-md-6">
+        <a href="{{ url_for('faculty.dashboard') }}" class="card shadow-sm text-decoration-none h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-easel fs-2 text-success"></i>
+                <h6 class="mt-2 mb-0 fw-semibold">My Classes</h6>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6">
+        <a href="{{ url_for('faculty_reports.reports_home') }}" class="card shadow-sm text-decoration-none h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-bar-chart fs-2 text-info"></i>
+                <h6 class="mt-2 mb-0 fw-semibold">Reports</h6>
+            </div>
+        </a>
+    </div>
+
+</div>
+
+<!-- Faculty Sessions -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h6 class="mb-0">
+            <i class="bi bi-easel"></i> My Classes Today
+        </h6>
+    </div>
+    <div class="card-body text-center text-muted">
+        No sessions scheduled for today.
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+
+{% block title %}Batches{% endblock %}
+{% block page_title %}Batches{% endblock %}
+
+{% block content %}
+
+<div class="row">
+
+    <!-- ===========================
+            ACTIVE BATCHS
+    ============================ -->
+
+    <div class="col-lg-8">
+
+        <h4 class="mb-4">
+
+            🎓 Active Batches
+
+        </h4>
+
+        {% if active_batches %}
+
+            {% for batch in active_batches %}
+
+            <div class="card shadow-sm mb-3">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <h4 class="mb-1">
+
+                                {{ batch.label }}
+
+                            </h4>
+
+                            <small class="text-muted">
+
+                                {{ batch.admission_year }}
+
+                                -
+
+                                {{ batch.graduation_year }}
+
+                            </small>
+
+                        </div>
+
+                        <span class="badge bg-success">
+
+                            Active
+
+                        </span>
+
+                    </div>
+
+                    <hr>
+
+                    <div class="row text-center">
+
+                        <div class="col">
+
+                            <h6>
+
+                                Semester
+
+                            </h6>
+
+                            <h3>
+
+                                {{ batch.current_sem }}
+
+                            </h3>
+
+                        </div>
+
+                        <div class="col">
+
+                            <h6>
+
+                                Students
+
+                            </h6>
+
+                            <h3>
+
+                                {{ batch.student_count }}
+
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+                    <hr>
+
+                    <div class="text-end">
+
+                        <a
+                            href="{{ url_for('academic.batch_workspace',
+                                             batch_id=batch.id) }}"
+                            class="btn btn-primary">
+
+                            Batch Dashboard
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="alert alert-info">
+
+                No active batches found.
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- ===========================
+                ALUMNI
+        ============================ -->
+
+        <h4 class="mt-5 mb-3">
+
+            🎓 Alumni
+
+        </h4>
+
+        {% if alumni_batches %}
+
+            {% for batch in alumni_batches %}
+
+            <div class="card border-secondary mb-3">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+
+                            <h5>
+
+                                {{ batch.label }}
+
+                            </h5>
+
+                            <small>
+
+                                Graduated
+
+                            </small>
+
+                        </div>
+
+                        <span class="badge bg-dark">
+
+                            Alumni
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="alert alert-light border">
+
+                No alumni batches yet.
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- ===========================
+            ADD BATCH
+    ============================ -->
+
+    <div class="col-lg-4">
+
+        <div class="card shadow-sm">
+
+            <div class="card-header">
+
+                <strong>
+
+                    Create New Batch
+
+                </strong>
+
+            </div>
+
+            <div class="card-body">
+
+                <form method="POST"
+                      action="{{ url_for('academic.add_batch') }}">
+
+                    <!-- Admission Year -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+
+                            Admission Year
+
+                        </label>
+
+                        <input
+                            type="number"
+                            name="admission_year"
+                            class="form-control"
+                            placeholder="2026"
+                            required>
+
+                    </div>
+
+                    <!-- Current Semester -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+
+                            Current Semester
+
+                        </label>
+
+                        <input
+                            type="number"
+                            name="current_sem"
+                            class="form-control"
+                            value="1"
+                            min="1"
+                            max="8">
+
+                    </div>
+
+                    <div class="alert alert-light small">
+
+                        Graduation Year and Batch Label
+                        are generated automatically.
+
+                    </div>
+
+                    <button
+                        class="btn btn-primary w-100"
+                        type="submit">
+
+                        <i class="bi bi-plus-circle"></i>
+
+                        Create Batch
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

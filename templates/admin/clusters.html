@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}Clusters{% endblock %}
+{% block page_title %}Cluster Management{% endblock %}
+
+{% block content %}
+
+<div class="row mb-4">
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <small class="text-muted">Total Clusters</small>
+                <h2>{{ stats.total }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <small class="text-muted">Faculty Assigned</small>
+                <h2>{{ stats.faculty }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <small class="text-muted">Sections Assigned</small>
+                <h2>{{ stats.sections }}</h2>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="row">
+
+    <div class="col-lg-8">
+
+        <div class="card shadow-sm">
+
+            <div class="card-header">
+
+                <strong>
+
+                    <i class="bi bi-diagram-3"></i>
+
+                    Clusters
+
+                </strong>
+
+            </div>
+
+            <div class="card-body p-0">
+
+                <table class="table table-hover mb-0">
+
+                    <thead class="table-light">
+
+                    <tr>
+
+                        <th>Cluster</th>
+
+                        <th>Department</th>
+
+                         
+
+                        <th>Sections</th>
+
+                        <th>Faculty</th>
+
+                        <th>Cluster Head</th>
+
+                        <th>Actions</th>
+
+                    </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% for c in clusters %}
+
+                    <tr>
+
+                        <td>
+
+                            <strong>
+
+                                {{ c.cluster_name }}
+
+                            </strong>
+
+                        </td>
+
+                        <td>
+
+                            {{ c.department }}
+
+                        </td>
+
+                        <td>
+
+                            <span class="badge bg-primary">
+
+                                {{ c.section_count }}
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <span class="badge bg-success">
+
+                                {{ c.faculty_count }}
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            {{ c.cluster_head or "-" }}
+
+                        </td>
+
+                        <td>
+
+                            <button
+                            class="btn btn-sm btn-outline-primary">
+
+                                <i class="bi bi-pencil"></i>
+
+                            </button>
+
+                            <button
+                            class="btn btn-sm btn-outline-danger">
+
+                                <i class="bi bi-trash"></i>
+
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-4">
+
+        <div class="card shadow-sm">
+
+            <div class="card-header">
+
+                <strong>
+
+                    <i class="bi bi-plus-circle"></i>
+
+                    Add Cluster
+
+                </strong>
+
+            </div>
+
+            <div class="card-body">
+
+                <form>
+
+                    <div class="mb-3">
+
+                        <label>Cluster Name</label>
+
+                        <input
+                        class="form-control">
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label>Department</label>
+
+                        <select class="form-select">
+
+                            <option>
+
+                                Select
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label>Cluster Head</label>
+
+                        <select
+                        class="form-select">
+
+                            <option>
+
+                                Select
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label>Remarks</label>
+
+                        <textarea
+                        class="form-control"
+                        rows="3"
+                        name="remarks"></textarea>
+
+                        </div>
+                    <button
+                    class="btn btn-primary w-100">
+
+                        Save Cluster
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

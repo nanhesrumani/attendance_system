@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Approval Queue{% endblock %}
+{% block page_title %}Student Approval Queue{% endblock %}
+
+{% block content %}
+{% if pending %}
+<div class="card shadow-sm">
+    <div class="card-header bg-white"><h6 class="mb-0"><i class="bi bi-person-check"></i> Pending Registrations ({{ pending|length }})</h6></div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr><th>Name</th><th>USN</th><th>Email</th><th>Department</th><th>Phone</th><th>Registered</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                    {% for p in pending %}
+                    <tr>
+                        <td class="fw-semibold">{{ p.full_name }}</td>
+                        <td><code>{{ p.usn or '—' }}</code></td>
+                        <td><small>{{ p.email }}</small></td>
+                        <td>{{ p.dept_code or '—' }}</td>
+                        <td><small>{{ p.phone or '—' }}</small></td>
+                        <td><small>{{ p.registered_at.strftime('%Y-%m-%d %H:%M') if p.registered_at else '—' }}</small></td>
+                        <td>
+                            <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#approveModal{{ p.id }}">
+                                <i class="bi bi-check-lg"></i> Approve
+                            </button>
+                            <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ p.id }}">
+                                <i class="bi bi-x-lg"></i> Reject
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- Approve Modal -->
+                    <div class="modal fade" id="approveModal{{ p.id }}" tabindex="-1">
+                        <div class="modal-dialog"><div class="modal-content">
+                            <form method="POST" action="{{ url_for('students_mgmt.approve_student', queue_id=p.id) }}">
+                                <div class="modal-header bg-success text-white"><h6 class="modal-title">Approve: {{ p.full_name }}</h6><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                                <div class="modal-body">
+                                    <p><strong>USN:</strong> {{ p.usn }}<br><strong>Email:</strong> {{ p.email }}</p>
+                                    <div class="mb-3"><label class="form-label">Assign Section *</label>
+                                        <select class="form-select" name="section_id" required><option value="">Select Section</option>
+                                            {% for s in sections %}<option value="{{ s.id }}">{{ s.dept_code }}-{{ s.section_label }} (Sem {{ s.sem_number }})</option>{% endfor %}
+                                        </select></div>
+                                    <div class="mb-3"><label class="form-label">Current Semester</label>
+                                        <input type="number" class="form-control" name="current_sem" min="1" max="8"></div>
+                                </div>
+                                <div class="modal-footer"><button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Approve & Assign</button></div>
+                            </form>
+                        </div></div>
+                    </div>
+
+                    <!-- Reject Modal -->
+                    <div class="modal fade" id="rejectModal{{ p.id }}" tabindex="-1">
+                        <div class="modal-dialog"><div class="modal-content">
+                            <form method="POST" action="{{ url_for('students_mgmt.reject_student', queue_id=p.id) }}">
+                                <div class="modal-header bg-danger text-white"><h6 class="modal-title">Reject: {{ p.full_name }}</h6><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                                <div class="modal-body">
+                                    <div class="mb-3"><label class="form-label">Reason</label>
+                                        <textarea class="form-control" name="reason" rows="3" placeholder="Reason for rejection..."></textarea></div>
+                                </div>
+                                <div class="modal-footer"><button type="submit" class="btn btn-danger"><i class="bi bi-x-lg"></i> Reject</button></div>
+                            </form>
+                        </div></div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-check-circle fs-1 text-success"></i>
+    <p class="mt-2">No pending approvals. All registrations have been reviewed.</p>
+</div>
+{% endif %}
+{% endblock %}

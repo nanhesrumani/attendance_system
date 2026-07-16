@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Batch Workspace{% endblock %}
+
+{% block page_title %}
+
+{{ batch.label }}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="card shadow-sm">
+
+    <div class="card-header">
+
+        <div class="d-flex justify-content-between">
+
+            <h3>
+
+                {{ batch.label }}
+
+            </h3>
+
+            <span class="badge bg-primary">
+
+                Semester {{ batch.current_sem }}
+
+            </span>
+
+        </div>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row g-4">
+
+            <div class="col-md-3">
+
+                <div class="card border-primary text-center">
+
+                    <div class="card-body">
+
+                        <h1>{{ total_students }}</h1>
+
+                        Students Joined
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <div class="card border-success text-center">
+
+                    <div class="card-body">
+
+                        <h1>{{ active_students }}</h1>
+
+                        Currently Studying
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <div class="card border-danger text-center">
+
+                    <div class="card-body">
+
+                        <h1>{{ dropped_students }}</h1>
+
+                        Dropped
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <div class="card border-dark text-center">
+
+                    <div class="card-body">
+
+                        <h1>{{ graduated_students }}</h1>
+
+                        Graduated
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <br>
+
+        <div class="row g-4">
+
+            <div class="col-md-6">
+
+                <div class="card">
+
+                    <div class="card-body text-center">
+
+                        <h2>
+
+                            {{ eligible_students }}
+
+                        </h2>
+
+                        Eligible For Promotion
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-6">
+
+                <div class="card">
+
+                    <div class="card-body text-center">
+
+                        <h2>
+
+                            {{ detained_students }}
+
+                        </h2>
+
+                        Detained
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <hr>
+
+        <div class="text-end">
+
+            <form
+                method="POST"
+                action="{{ url_for('academic.promote_batch',
+                                    batch_id=batch.id) }}"
+                onsubmit="return confirm(
+                    'Promote this batch to the next semester?'
+                );">
+
+                <button
+                    class="btn btn-success">
+
+                    Promote Batch
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

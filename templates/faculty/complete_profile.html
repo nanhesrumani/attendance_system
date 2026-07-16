@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}Complete Profile{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-7">
+
+            <div class="card shadow border-0">
+
+                <div class="card-header bg-primary text-white">
+
+                    <h3 class="mb-0">
+                        <i class="bi bi-person-check-fill"></i>
+                        First Time Account Activation
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="alert alert-info">
+
+                        <strong>Welcome {{ user.full_name }}</strong>
+
+                        <br>
+
+                        This account was automatically created from the timetable upload.
+
+                        Please complete your profile before accessing the Faculty Dashboard.
+
+                    </div>
+
+                    <form method="POST">
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Full Name
+
+                            </label>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                value="{{ user.full_name }}"
+                                readonly>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                New Email Address
+
+                            </label>
+
+                            <input
+                                type="email"
+                                name="email"
+                                class="form-control"
+                                value=""
+                                placeholder="example@gmail.com"
+                                required>
+
+                            <small class="text-muted">
+
+                                This email will become your permanent login ID.
+
+                            </small>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Mobile Number
+
+                            </label>
+
+                            <input
+                                type="text"
+                                name="phone"
+                                class="form-control"
+                                placeholder="9876543210">
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                New Password
+
+                            </label>
+
+                            <div class="input-group">
+
+                                <input
+                                    type="password"
+                                    id="password"
+                                    name="password"
+                                    class="form-control"
+                                    required>
+
+                                <button
+                                    class="btn btn-outline-secondary"
+                                    type="button"
+                                    onclick="togglePassword('password',this)">
+
+                                    <i class="bi bi-eye"></i>
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Confirm Password
+
+                            </label>
+
+                            <div class="input-group">
+
+                                <input
+                                    type="password"
+                                    id="confirm_password"
+                                    name="confirm_password"
+                                    class="form-control"
+                                    required>
+
+                                <button
+                                    class="btn btn-outline-secondary"
+                                    type="button"
+                                    onclick="togglePassword('confirm_password',this)">
+
+                                    <i class="bi bi-eye"></i>
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                        <div class="mb-4">
+
+                            <div class="progress" style="height:8px;">
+
+                                <div
+                                    id="strengthBar"
+                                    class="progress-bar"
+                                    style="width:0%">
+                                </div>
+
+                            </div>
+
+                            <small
+                                id="strengthText"
+                                class="text-muted">
+
+                                Password Strength
+
+                            </small>
+
+                        </div>
+
+                        <button
+                            class="btn btn-success w-100">
+
+                            <i class="bi bi-check-circle-fill"></i>
+
+                            Complete Profile
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+function togglePassword(id,btn){
+
+    let input=document.getElementById(id);
+
+    let icon=btn.querySelector("i");
+
+    if(input.type==="password"){
+
+        input.type="text";
+
+        icon.className="bi bi-eye-slash";
+
+    }
+
+    else{
+
+        input.type="password";
+
+        icon.className="bi bi-eye";
+
+    }
+
+}
+
+const password=document.getElementById("password");
+
+const bar=document.getElementById("strengthBar");
+
+const text=document.getElementById("strengthText");
+
+password.addEventListener("input",function(){
+
+    let score=0;
+
+    let p=password.value;
+
+    if(p.length>=8) score++;
+
+    if(/[A-Z]/.test(p)) score++;
+
+    if(/[a-z]/.test(p)) score++;
+
+    if(/[0-9]/.test(p)) score++;
+
+    if(/[^A-Za-z0-9]/.test(p)) score++;
+
+    let width=score*20;
+
+    bar.style.width=width+"%";
+
+    if(score<=2){
+
+        bar.className="progress-bar bg-danger";
+
+        text.innerHTML="Weak Password";
+
+    }
+
+    else if(score<=4){
+
+        bar.className="progress-bar bg-warning";
+
+        text.innerHTML="Medium Password";
+
+    }
+
+    else{
+
+        bar.className="progress-bar bg-success";
+
+        text.innerHTML="Strong Password";
+
+    }
+
+});
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,708 @@
+/* ============================================
+   AI Attendance System — Custom Stylesheet
+   Built on top of Bootstrap 5.3
+   ============================================ */
+
+/* ============================================
+   ROOT VARIABLES
+   ============================================ */
+
+:root, [data-bs-theme] {
+    --bs-primary:#2777f0;
+    --bs-primary-rgb:13,110,253;
+    --bs-primary-text-emphasis: #2af501;
+    --bs-primary-bg-subtle: rgba(0, 222, 247, 0.15);
+    --bs-primary-border-subtle: #16daf4;
+    --bs-link-color: #00def7;
+    --bs-link-color-rgb: 0, 222, 247;
+    --bs-link-hover-color: #2af501;
+    --bs-link-hover-color-rgb: 42, 245, 1;
+}
+
+:root {
+    --sidebar-width: 250px;
+    --sidebar-collapsed-width: 60px;
+    --topbar-height: 56px;
+    --sidebar-bg: #1a1d21;
+    --sidebar-hover: #2c3034;
+    --sidebar-active: #0d6efd;
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+/* .btn-primary,
+.bg-primary,
+.badge.bg-primary {
+    background-color: #00def7 !important;
+    border-color: #00def7 !important;
+    color: #06262b !important;   /* dark text for contrast on light cyan */
+}
+.btn-primary:hover {
+    background-color: #2af501 !important;
+    border-color: #2af501 !important;
+    color: #06262b !important;
+}
+.btn-outline-primary {
+    color: #00def7 !important;
+    border-color: #00def7 !important;
+    background: transparent !important;
+}
+.btn-outline-primary:hover {
+    background-color: rgba(0, 222, 247, 0.12) !important;
+    color: #00def7 !important;
+} */
+
+/* ============================================
+   GLOBAL
+   ============================================ */
+body{
+
+    font-family:var(--font-family);
+
+    font-size:.9rem;
+
+    background:var(--bg);
+
+    color:var(--text);
+
+    overflow-x:hidden;
+
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+}
+
+a {
+    text-decoration: none;
+}
+
+code {
+    font-size: 0.85em;
+    color: #a78bfa;
+    background: var(--hover-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
+/* ============================================
+   SIDEBAR
+   ============================================ */
+.sidebar {
+    width: var(--sidebar-width);
+    min-height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1040;
+    background: var(--sidebar-bg);
+    transition: width 0.25s ease;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.sidebar-header {
+    height: var(--topbar-height);
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.sidebar-header h5 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.sidebar-nav .nav-link {
+    padding: 8px 16px;
+    border-radius: 6px;
+    margin: 2px 8px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.sidebar-nav .nav-link i {
+    font-size: 1.1rem;
+    width: 22px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.sidebar-nav .nav-link:hover {
+    background: var(--sidebar-hover);
+}
+
+.sidebar-nav .nav-link.active {
+    background: var(--sidebar-active);
+    color: white !important;
+}
+
+.sidebar-section-label {
+    padding: 0 16px;
+    margin-top: 8px;
+}
+
+.sidebar-section-label span {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.sidebar .badge {
+    font-size: 0.65rem;
+}
+
+/* ============================================
+   SIDEBAR COLLAPSED STATE
+   ============================================ */
+.sidebar.collapsed {
+    width: var(--sidebar-collapsed-width);
+}
+
+.sidebar.collapsed .sidebar-text {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-header h5 span {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-section-label {
+    display: none;
+}
+
+.sidebar.collapsed .nav-link {
+    justify-content: center;
+    padding: 10px 0;
+    margin: 2px 4px;
+}
+
+.sidebar.collapsed .nav-link i {
+    font-size: 1.2rem;
+    width: auto;
+}
+
+.sidebar.collapsed .badge {
+    display: none;
+}
+
+/* ============================================
+   PAGE CONTENT
+   ============================================ */
+.page-content {
+    margin-left: var(--sidebar-width);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: margin-left 0.25s ease;
+}
+
+.sidebar.collapsed + .page-content {
+    margin-left: var(--sidebar-collapsed-width);
+}
+
+/* ============================================
+   TOPBAR / NAVBAR
+   ============================================ */
+.page-content > .navbar {
+    height: var(--topbar-height);
+    z-index: 1030;
+}
+
+#sidebarToggle {
+    border: none;
+    font-size: 1.2rem;
+    padding: 4px 8px;
+}
+
+#sidebarToggle:hover {
+    background: #e9ecef;
+}
+
+/* ============================================
+   CARDS
+   ============================================ */
+.card {
+    border: none;
+    border-radius: 10px;
+    transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+    border-bottom: 1px solid var(--border);
+    border-radius: 10px 10px 0 0 !important;
+    padding: 12px 16px;
+    background: var(--card);
+    color: var(--text);
+}
+
+.card-header h6 {
+    font-weight: 600;
+}
+
+/* ============================================
+   TABLES
+   ============================================ */
+.table {
+    font-size: 0.85rem;
+}
+
+.table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+    border-bottom-width: 2px;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.04);
+}
+
+.table td {
+    vertical-align: middle;
+    padding: 8px 12px;
+}
+
+/* ============================================
+   BADGES
+   ============================================ */
+.badge {
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 5px;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+.btn {
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 6px;
+}
+
+.btn-sm {
+    font-size: 0.78rem;
+    padding: 4px 10px;
+}
+
+.btn-group-sm > .btn {
+    border-radius: 4px;
+}
+
+/* ============================================
+   FORMS
+   ============================================ */
+.form-control, .form-select {
+    font-size: 0.85rem;
+    border-radius: 6px;
+    border-color: var(--border);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--sidebar-active);
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+}
+
+.form-label {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+
+.form-control-sm, .form-select-sm {
+    font-size: 0.8rem;
+}
+
+/* ============================================
+   PROGRESS BARS
+   ============================================ */
+.progress {
+    border-radius: 10px;
+    background: var(--card);
+}
+
+.progress-bar {
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: width 0.4s ease;
+}
+
+/* ============================================
+   ALERTS
+   ============================================ */
+.alert {
+    font-size: 0.85rem;
+    border-radius: 8px;
+    border: none;
+}
+
+.alert i {
+    margin-right: 6px;
+}
+
+/* ============================================
+   MODALS
+   ============================================ */
+.modal-content {
+    border: none;
+    border-radius: 12px;
+}
+
+.modal-header {
+    border-radius: 12px 12px 0 0;
+}
+
+/* ============================================
+   AUTH PAGES (Login/Register)
+   ============================================ */
+.auth-wrapper {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.auth-wrapper .card {
+    border-radius: 12px;
+    border: none;
+}
+
+.auth-logo i {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* ============================================
+   LIVE FEED / RECOGNITION
+   ============================================ */
+.live-feed-container {
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+}
+
+.live-feed-container img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.live-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+}
+
+.live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ff0000;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* ============================================
+   ATTENDANCE STATUS COLORS
+   ============================================ */
+.status-present {
+    color: #198754;
+    font-weight: 600;
+}
+
+.status-absent {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.status-spoof {
+    color: #fd7e14;
+    font-weight: 600;
+}
+
+/* ============================================
+   ENROLLMENT CARDS
+   ============================================ */
+.enrollment-card {
+    transition: transform 0.2s ease;
+}
+
+.enrollment-card:hover {
+    transform: translateY(-3px);
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+footer {
+    font-size: 0.8rem;
+    background: var(--topbar);
+    color: var(--text-muted);
+}
+
+/* ============================================
+   RESPONSIVE — MOBILE
+   ============================================ */
+@media (max-width: 991.98px) {
+    .sidebar {
+        transform: translateX(-100%);
+        width: var(--sidebar-width);
+        z-index: 1050;
+    }
+
+    .sidebar.show {
+        transform: translateX(0);
+    }
+
+    .page-content {
+        margin-left: 0 !important;
+    }
+
+    /* Overlay when sidebar is open on mobile */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1045;
+    }
+
+    .sidebar-overlay.show {
+        display: block;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .table {
+        font-size: 0.78rem;
+    }
+
+    .card-body {
+        padding: 12px;
+    }
+
+    h3 {
+        font-size: 1.4rem;
+    }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+@media print {
+    .sidebar,
+    .navbar,
+    .btn,
+    footer,
+    .no-print {
+        display: none !important;
+    }
+
+    .page-content {
+        margin-left: 0 !important;
+    }
+
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+    }
+
+    body {
+        background: #fff;
+        font-size: 12px;
+    }
+
+    .table {
+        font-size: 10px;
+    }
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+.text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.min-h-200 {
+    min-height: 200px;
+}
+
+.gap-1 { gap: 0.25rem; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 1rem; }
+
+.border-dashed {
+    border-style: dashed !important;
+}
+
+/* Shimmer loading effect */
+.shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Fade in animation */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* ============================================
+   TIMETABLE ENHANCEMENTS
+   ============================================ */
+
+/* Give the table a cleaner, more spaced-out look */
+.timetable-table {
+    border-collapse: separate;
+    border-spacing: 0 8px; /* Adds space between rows */
+    background-color: transparent;
+}
+
+.timetable-table tbody tr {
+    background-color: var(--card);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    border-radius: 8px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.timetable-table tbody tr:hover {
+    transform: scale(1.005);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    background-color: var(--hover-bg) !important;
+}
+
+.timetable-table td {
+    border: none;
+    padding: 12px 15px !important;
+}
+
+/* Left Accent Border for different slot types */
+.slot-accent {
+    width: 4px;
+    border-radius: 4px 0 0 4px;
+    padding: 0 !important;
+}
+
+/* Color Palette for accents */
+.accent-theory { background-color: #0d6efd; }       /* Blue */
+.accent-lab { background-color: #0dcaf0; }          /* Cyan */
+.accent-merged { background-color: #fd7e14; }       /* Orange */
+.accent-break { background-color: #adb5bd; }        /* Gray */
+
+/* Time Column Styling */
+.time-box {
+    background: var(--hover-bg);
+    padding: 4px 8px;
+    border-radius: 6px;
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+/* Subject Code Tag */
+.subject-code-tag {
+    font-weight: 700;
+    color: #4b38b3;
+    letter-spacing: 0.5px;
+    font-family: 'Monaco', 'Consolas', monospace;
+}
+
+.active-row {
+    background-color: rgba(40, 167, 69, 0.18) !important;
+    border-left: 5px solid #28a745;
+    box-shadow: 0 0 10px rgba(40, 167, 69, 0.4);
+}
+
+/* Custom Table Row Colors (Overrides Bootstrap defaults for better look) */
+.table-secondary-soft { background-color: var(--hover-bg) !important; }
+
+/* ============================================
+   SEMESTER FILTER — YELLOW STYLE
+   ============================================ */
+.sem-btn {
+    background: transparent;
+    border: 1.5px solid #00def7;
+    color: #2af501;
+    font-weight: 500;
+}
+
+.sem-btn:hover {
+    background: rgba(245, 179, 1, 0.12);
+    color: #eb45a9;
+    border-color: #e4df55;
+}
+
+.sem-btn.sem-btn-active {
+    background: #f5b301;
+    border-color: #f5b301;
+    color: #1a1a1a;
+}
+
+.sem-btn .badge {
+    background: rgba(245, 179, 1, 0.18) !important;
+    color: #f5b301 !important;
+}
+
+.sem-btn.sem-btn-active .badge {
+    background: rgba(0, 0, 0, 0.15) !important;
+    color: #1a1a1a !important;
+}

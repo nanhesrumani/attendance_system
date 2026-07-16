@@ -1,0 +1,403 @@
+{% extends "base.html" %}
+{% block title %}Session Detail{% endblock %}
+{% block page_title %}Session Detail{% endblock %}
+
+{% block content %}
+
+<!-- Session Header -->
+
+<div class="card border-0 shadow-sm mb-4">
+
+  <div class="card-body">
+
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+
+      <div>
+
+        <div class="d-flex align-items-center gap-2 mb-2">
+
+          <h3 class="mb-0">
+            {{ session_data.subject_code or 'Session' }}
+          </h3>
+
+          {% if session_data.live_status == 'active' %}
+            <span class="badge bg-success">
+              <span class="live-dot"></span>
+              Live
+            </span>
+          {% elif session_data.live_status == 'completed' %}
+            <span class="badge bg-secondary">
+              Completed
+            </span>
+          {% elif session_data.live_status == 'scheduled' %}
+            <span class="badge bg-primary">
+              Scheduled
+            </span>
+          {% elif session_data.live_status == 'dismissed' %}
+            <span class="badge bg-warning text-dark">
+              Dismissed
+            </span>
+          {% elif session_data.live_status == 'cancelled' %}
+            <span class="badge bg-danger">
+              Cancelled
+            </span>
+          {% endif %}
+
+        </div>
+
+        <div class="text-muted mb-2">
+          {{ session_data.subject_name or '' }}
+        </div>
+
+        <!-- Session Metadata -->
+
+        <div class="d-flex flex-wrap gap-3 small">
+
+          <div>
+            <strong>Faculty:</strong>
+            {{ session_data.faculty_name or '—' }}
+          </div>
+
+          <div>
+            <strong>Type:</strong>
+            {{ session_data.session_type|title if session_data.session_type else 'Regular' }}
+          </div>
+
+          <div>
+            <strong>Time:</strong>
+            {{ session_data.start_time }} - {{ session_data.end_time }}
+          </div>
+
+          <div>
+            <strong>Date:</strong>
+            {{ session_data.session_date }}
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Attendance Summary -->
+
+      <div class="text-end">
+
+        <div class="small text-muted">
+          Attendance
+        </div>
+
+        <div class="fs-3 fw-bold text-success">
+          {{ present_count }}/{{ total_count }}
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+<!-- Included Sections -->
+
+<div class="card border-0 shadow-sm mb-4">
+
+  <div class="card-body">
+
+    <h6 class="fw-bold mb-3">
+      Included Sections
+    </h6>
+
+    <div class="d-flex flex-wrap gap-2">
+
+      {% for sec in session_sections %}
+
+        <span class="badge bg-light text-dark border px-3 py-2">
+
+          {{ sec.dept_code }}-{{ sec.section_label }}
+
+        </span>
+
+      {% endfor %}
+
+    </div>
+
+  </div>
+
+</div>
+
+{% if session_data.live_status == 'active' %}
+
+<div class="alert alert-success shadow-sm mb-4">
+
+  <div class="d-flex align-items-center gap-2">
+
+    <span class="live-dot"></span>
+
+    <strong>
+      Live Session Running
+    </strong>
+
+  </div>
+
+</div>
+
+{% endif %}
+
+<div class="d-flex align-items-center gap-2 mb-4">
+  <a href="{{ url_for('sessions.list_sessions') }}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i> Back
+  </a>
+  <span class="text-muted">/</span>
+  <span class="fw-semibold">
+    {{ session_data.dept_code }}-{{ session_data.section_label }} —
+    {{ session_data.subject_code }}: {{ session_data.subject_name }}
+  </span>
+  {% if session_data.status == 'active' %}
+    <span class="badge bg-success ms-2">
+      <span class="me-1" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#fff;animation:pulse 1s infinite"></span>
+      Live
+    </span>
+  {% endif %}
+</div>
+
+<div class="row g-4 mb-4">
+  <!-- Session Info -->
+  <div class="col-md-7">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-transparent border-bottom fw-semibold">
+        <i class="bi bi-info-circle me-2 text-primary"></i>Session Info
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <div class="text-muted small">Subject</div>
+            <div class="fw-semibold">{{ session_data.subject_code }} — {{ session_data.subject_name }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="text-muted small">Section</div>
+            <div class="fw-semibold">{{ session_data.dept_code }}-{{ session_data.section_label }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="text-muted small">Faculty</div>
+            <div>{{ session_data.faculty_name or '—' }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="text-muted small">Date</div>
+            <div>{{ session_data.session_date }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="text-muted small">Time</div>
+            <div>{{ session_data.start_time or '—' }} – {{ session_data.end_time or '—' }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="text-muted small">Status</div>
+            <div>
+              {% if session_data.status == 'active' %}
+                <span class="badge bg-success">Active</span>
+              {% elif session_data.status == 'completed' %}
+                <span class="badge bg-secondary">Completed</span>
+              {% elif session_data.status == 'scheduled' %}
+                <span class="badge bg-primary">Scheduled</span>
+              {% elif session_data.status == 'dismissed' %}
+                <span class="badge bg-warning text-dark">Dismissed</span>
+              {% elif session_data.status == 'cancelled' %}
+                <span class="badge bg-dark">Cancelled</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ session_data.status }}</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="text-muted small">Camera</div>
+            <div>
+              {% if session_data.camera_name %}
+                <span class="badge bg-info text-dark">
+                  <i class="bi bi-camera-video"></i> {{ session_data.camera_name }}
+                </span>
+              {% else %}—{% endif %}
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="text-muted small">Streaming</div>
+            <div>
+              {% if is_streaming %}
+                <span class="badge bg-success">Live</span>
+              {% else %}
+                <span class="text-muted">Not streaming</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attendance Summary + Actions -->
+  <div class="col-md-5">
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body text-center">
+        <div class="fs-1 fw-bold text-success">{{ present_count }}</div>
+        <div class="text-muted">Present of {{ total_count }}</div>
+        {% if total_count > 0 %}
+        <div class="progress mt-2" style="height:8px">
+          <div class="progress-bar bg-success"
+               style="width:{{ ((present_count/total_count)*100)|round|int }}%"></div>
+        </div>
+        <div class="small text-muted mt-1">
+          {{ ((present_count/total_count)*100)|round|int }}% attendance
+        </div>
+        {% endif %}
+        <div class="row mt-3 text-center">
+          <div class="col-6">
+            <div class="fw-bold text-success">{{ present_count }}</div>
+            <div class="text-muted small">Present</div>
+          </div>
+          <div class="col-6">
+            <div class="fw-bold text-danger">{{ absent_count }}</div>
+            <div class="text-muted small">Absent</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Session Actions -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent border-bottom fw-semibold">
+        <i class="bi bi-gear me-2 text-secondary"></i>Actions
+      </div>
+      <div class="card-body d-flex flex-column gap-2">
+        {% if session_data.status == 'scheduled' %}
+          <form method="POST" action="{{ url_for('sessions.open_session', session_id=session_data.id) }}">
+            <button class="btn btn-success w-100">
+              <i class="bi bi-play-fill"></i> Open Session
+            </button>
+          </form>
+        {% endif %}
+        {% if session_data.status == 'active' %}
+          <form method="POST" action="{{ url_for('sessions.close_session', session_id=session_data.id) }}">
+            <button class="btn btn-secondary w-100">
+              <i class="bi bi-stop-fill"></i> Close Session
+            </button>
+          </form>
+        {% endif %}
+        {% if session_data.status in ('scheduled', 'active') %}
+          <button class="btn btn-outline-warning w-100" data-bs-toggle="collapse" data-bs-target="#dismissForm">
+            <i class="bi bi-x-circle"></i> Dismiss Session
+          </button>
+          <div class="collapse" id="dismissForm">
+            <form method="POST" action="{{ url_for('sessions.dismiss_session', session_id=session_data.id) }}">
+              <input type="text" name="reason" class="form-control form-control-sm mb-2"
+                     placeholder="Reason (optional)">
+              <button type="submit" class="btn btn-warning btn-sm w-100">Confirm Dismiss</button>
+            </form>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Assign Camera -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-transparent border-bottom fw-semibold">
+    <i class="bi bi-camera-video me-2 text-info"></i>Assign Camera
+  </div>
+  <div class="card-body">
+    <form method="POST" action="{{ url_for('sessions.assign_camera', session_id=session_data.id) }}"
+          class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label small">Camera</label>
+        <select name="camera_id" class="form-select form-select-sm">
+          <option value="">None</option>
+          {% for cam in cameras %}
+            <option value="{{ cam.id }}" {% if session_data.camera_id == cam.id %}selected{% endif %}>
+              {{ cam.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-5">
+        <label class="form-label small">RTSP URL (optional override)</label>
+        <input type="text" name="rtsp_url" class="form-control form-control-sm"
+               value="{{ session_data.rtsp_url or '' }}" placeholder="rtsp://...">
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-primary btn-sm w-100">Save Camera</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Attendance Table -->
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-transparent border-bottom fw-semibold">
+    <i class="bi bi-people me-2 text-primary"></i>
+    Attendance — {{ total_count }} students
+  </div>
+  <div class="card-body p-0">
+    {% if attendance %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">#</th>
+            <th>USN</th>
+            <th>Name</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in attendance %}
+          <tr>
+            <td class="ps-3 text-muted small">{{ loop.index }}</td>
+            <td><span class="font-monospace small">{{ a.usn }}</span></td>
+            <td>{{ a.student_name }}</td>
+            <td>
+              {% if a.status == 'present' %}
+                <span class="badge bg-success-subtle text-success border border-success">
+                  <i class="bi bi-check-circle"></i> Present
+                </span>
+              {% else %}
+                <span class="badge bg-danger-subtle text-danger border border-danger">
+                  <i class="bi bi-x-circle"></i> Absent
+                </span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-4 text-muted">
+      <i class="bi bi-people fs-2 d-block mb-1 opacity-25"></i>
+      No attendance records yet.
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+</style>
+
+<style>
+
+
+.live-dot{
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    background:#22c55e;
+    display:inline-block;
+    margin-right:6px;
+    animation:pulse 1s infinite;
+}
+@keyframes pulse{
+    0%{opacity:1}
+    50%{opacity:.4}
+    100%{opacity:1}
+}
+
+</style>
+
+{% endblock %}

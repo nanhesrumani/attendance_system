@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}My Defaulters{% endblock %}
+{% block page_title %}Defaulters in My Subjects (Below {{ threshold }}%){% endblock %}
+
+{% block content %}
+<div class="mb-3 d-flex justify-content-between align-items-center">
+    <div>
+        <span class="text-muted">Threshold: <strong class="text-danger">{{ threshold }}%</strong></span>
+        <span class="ms-3 text-muted">Found: <strong>{{ defaulters|length }}</strong></span>
+    </div>
+    <div>
+        <form method="GET" class="d-inline">
+            <div class="input-group input-group-sm" style="width:200px">
+                <input type="number" class="form-control" name="threshold" value="{{ threshold }}" min="1" max="100">
+                <button class="btn btn-outline-primary" type="submit"><i class="bi bi-funnel"></i></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        {% if defaulters %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle small">
+                <thead class="table-light">
+                    <tr><th>#</th><th>USN</th><th>Name</th><th>Subject</th><th>Section</th><th>Total</th><th>Present</th><th>%</th></tr>
+                </thead>
+                <tbody>
+                    {% for d in defaulters %}
+                    <tr class="table-danger">
+                        <td>{{ loop.index }}</td>
+                        <td><code>{{ d.usn }}</code></td>
+                        <td>{{ d.full_name }}</td>
+                        <td><code>{{ d.subject_code }}</code> <small class="text-muted">{{ d.subject_name }}</small></td>
+                        <td>{{ d.dept_code }}-{{ d.section_label }}</td>
+                        <td>{{ d.total_sessions }}</td>
+                        <td>{{ d.present }}</td>
+                        <td><span class="badge bg-danger">{{ d.percentage }}%</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-check-circle fs-1 text-success"></i>
+            <p class="mt-2">No defaulters in your subjects. 🎉</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<a href="{{ url_for('faculty_reports.reports_home') }}" class="btn btn-outline-secondary mt-3">
+    <i class="bi bi-arrow-left"></i> Back to Reports
+</a>
+{% endblock %}

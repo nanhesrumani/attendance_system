@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h4>Faculty Approvals</h4>
+
+<table class="table">
+    <tr><th>Name</th><th>Email</th><th>Action</th></tr>
+
+    {% for r in requests %}
+    <tr>
+        <td>{{ r.full_name }}</td>
+        <td>{{ r.email }}</td>
+        <td>
+            <a href="{{ url_for('hod_faculty.approve_faculty', user_id=r.id) }}" class="btn btn-success btn-sm">
+                Approve
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

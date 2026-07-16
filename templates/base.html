@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-bs-theme="light">
+<head>
+  <script>
+    (function() {
+      var saved = localStorage.getItem('app_theme') || 'graphite';
+      document.documentElement.setAttribute('data-theme', saved);
+      document.documentElement.setAttribute('data-bs-theme', saved === 'light' ? 'light' : 'dark');
+    })();
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <title>{% block title %}AttendAI{% endblock %}</title>
+
+  <!-- Bootstrap 5.3 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/themes.css') }}">
+
+  <style>
+
+
+    :root {
+      --sidebar-width: 240px;
+      --sidebar-collapsed-width: 64px;
+      --topbar-height: 56px;
+      --transition: 0.22s cubic-bezier(.4,0,.2,1);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+        font-family: 'Inter', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        overflow-x: hidden;
+    }
+
+    /* ─── SIDEBAR ─────────────────────────────── */
+    #sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      width: var(--sidebar-width);
+      background:var(--sidebar);
+      display: flex; flex-direction: column;
+      transition: width var(--transition);
+      z-index: 1000;
+      overflow: hidden;
+    }
+    #sidebar.collapsed { width: var(--sidebar-collapsed-width); }
+
+    .sidebar-logo {
+      height: var(--topbar-height);
+      display: flex; align-items: center;
+      padding: 0 18px; gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      flex-shrink: 0;
+    }
+    .sidebar-logo .logo-icon {
+      width: 28px; height: 28px; flex-shrink: 0;
+      background: linear-gradient(135deg,#6366f1,#8b5cf6);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 14px;
+    }
+    .sidebar-logo .logo-text {
+      font-weight: 700; font-size: 1rem; color: #fff;
+      white-space: nowrap; overflow: hidden;
+      transition: opacity var(--transition), width var(--transition);
+    }
+    #sidebar.collapsed .logo-text { opacity: 0; width: 0; }
+
+    .sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px 8px; }
+    .sidebar-nav::-webkit-scrollbar { width: 4px; }
+    .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 2px; }
+
+    .nav-section-label {
+      font-size: 0.65rem; font-weight: 600; letter-spacing: .08em;
+      color: rgba(255,255,255,.35);
+      padding: 16px 10px 4px;
+      text-transform: uppercase;
+      white-space: nowrap; overflow: hidden;
+      transition: opacity var(--transition);
+    }
+    #sidebar.collapsed .nav-section-label { opacity: 0; }
+
+    .nav-link-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 10px; border-radius: 8px;
+      color: rgba(255,255,255,.65);
+      text-decoration: none;
+      font-size: .875rem; font-weight: 450;
+      transition: background var(--transition), color var(--transition);
+      white-space: nowrap;
+      position: relative;
+    }
+    .nav-link-item:hover { background:var(--sidebar-hover); color: #fff; }
+    .nav-link-item.active { background:var(--sidebar-hover); color: #a5b4fc; }
+    .nav-link-item .nav-icon { font-size: 1rem; flex-shrink: 0; width: 20px; text-align: center; }
+    .nav-link-item .nav-label {
+      transition: opacity var(--transition), width var(--transition);
+      overflow: hidden;
+    }
+    #sidebar.collapsed .nav-link-item .nav-label { opacity: 0; width: 0; }
+    #sidebar.collapsed .nav-link-item { justify-content: center; padding: 9px; }
+
+    /* Tooltip on collapsed */
+    #sidebar.collapsed .nav-link-item::after {
+      content: attr(data-label);
+      position: absolute; left: calc(100% + 12px);
+      background: #1f2937; color: #fff;
+      font-size: .8rem; padding: 4px 10px; border-radius: 6px;
+      white-space: nowrap; pointer-events: none;
+      opacity: 0; transition: opacity .15s;
+    }
+    #sidebar.collapsed .nav-link-item:hover::after { opacity: 1; }
+
+    .nav-badge {
+      margin-left: auto; background: #ef4444;
+      color: #fff; font-size: .65rem; padding: 1px 6px;
+      border-radius: 10px; flex-shrink: 0;
+    }
+    #sidebar.collapsed .nav-badge { display: none; }
+
+    /* ─── MAIN AREA ───────────────────────────── */
+    #main-area {
+      margin-left: var(--sidebar-width);
+      transition: margin-left var(--transition);
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+    }
+    #sidebar.collapsed ~ #main-area { margin-left: var(--sidebar-collapsed-width); }
+
+    /* ─── TOPBAR ──────────────────────────────── */
+    #topbar {
+      height: var(--topbar-height);
+      background:var(--topbar);
+      color:var(--text);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 20px; gap: 12px;
+      position: sticky; top: 0; z-index: 999;
+      box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    }
+    #toggle-sidebar {
+      background: none; border: none; cursor: pointer;
+      color:var(--text); font-size: 1.25rem;
+      padding: 4px 8px; border-radius: 6px;
+      transition: background .15s, color .15s;
+    }
+    #toggle-sidebar:hover { background:var(--sidebar-hover); color: var(--text); }
+
+    .page-title { font-weight: 600; font-size: .95rem; color:var(--text); }
+    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+    /* ─── CONTENT ─────────────────────────────── */
+    #page-content { flex: 1; padding: 24px 20px; }
+
+    /* ─── ALERTS ──────────────────────────────── */
+    .alert { border-radius: 10px; border: none; }
+
+    /* ─── AUTH PAGE ───────────────────────────── */
+    .auth-wrapper {
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      #sidebar { transform: translateX(-100%); width: var(--sidebar-width) !important; }
+      #sidebar.mobile-open { transform: translateX(0); }
+      #main-area { margin-left: 0 !important; }
+    }
+  </style>
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+{% if current_user.is_authenticated %}
+
+<div id="sidebar" id="sidebar">
+  <!-- Logo -->
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="bi bi-camera-video-fill"></i></div>
+    <div class="logo-text">AttendAI</div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="sidebar-nav">
+
+    {% if current_user.role == 'admin' %}
+    <div class="nav-section-label">Main</div>
+    <a class="nav-link-item {{ 'active' if request.endpoint == 'admin.dashboard' }}"
+       href="{{ url_for('admin.dashboard') }}" data-label="Dashboard">
+      <i class="bi bi-speedometer2 nav-icon"></i>
+      <span class="nav-label">Dashboard</span>
+    </a>
+
+    <div class="nav-section-label">Academic</div>
+    <a class="nav-link-item {{ 'active' if request.endpoint and 'academic.departments' in request.endpoint }}"
+       href="{{ url_for('academic.departments') }}" data-label="Departments">
+      <i class="bi bi-building nav-icon"></i>
+      <span class="nav-label">Departments</span>
+    </a>
+    <a class="nav-link-item {{ 'active' if request.endpoint and 'academic.periods' in request.endpoint }}"
+       href="{{ url_for('academic.periods') }}" data-label="Academic Periods">
+      <i class="bi bi-calendar-range nav-icon"></i>
+      <span class="nav-label">Academic Periods</span>
+    </a>
+    <a class="nav-link-item {{ 'active' if request.endpoint and 'academic.batches' in request.endpoint }}"
+       href="{{ url_for('academic.batches') }}" data-label="Batches">
+      <i class="bi bi-people nav-icon"></i>
+      <span class="nav-label">Batches</span>
+    </a>
+    <a class="nav-link-item {{ 'active' if request.endpoint and 'academic.sections' in request.endpoint }}"
+       href="{{ url_for('academic.sections') }}" data-label="Sections">
+      <i class="bi bi-grid-3x3 nav-icon"></i>
+      <span class="nav-label">Sections</span>
+    </a>
+    <a class="nav-link-item {{ 'active' if request.endpoint and 'academic.subjects' in request.endpoint }}"
+       href="{{ url_for('academic.subjects') }}" data-label="Subjects">
+      <i class="bi bi-book nav-icon"></i>
+      <span class="nav-label">Subjects</span>
+    </a>
+    <a class="nav-link-item {{ 'active' if request.endpoint and 'electives' in request.endpoint }}"
+      href="{{ url_for('electives.manage_page') }}" data-label="Electives">
+      <i class="bi bi-diagram-3 nav-icon"></i>
+      <span class="nav-label">Elective Groups</span>
+    </a>
+    <div class="nav-section-label">People</div>
+    <a class="nav-link-item {{ 'active' if request.endpoint and 'approval' in request.endpoint }}"
+       href="{{ url_for('students_mgmt.approval_queue') }}" data-label="Approvals">
+      <i class="bi bi-person-check nav-icon"></i>
+      <span class="nav-label">Approvals</span>
+      {% if pending_approval_count is defined and pending_approval_count > 0 %}
+      <span class="nav-badge">{{ pending_approval_count }}</span>
+      {% endif %}
+    </a>
+    <a class="nav-link-item {{ 'active' if request.endpoint and 'students_mgmt' in request.endpoint }}"
+       href="{{ url_for('students_mgmt.enrollment_page') }}" data-label="Enrollments">
+      <i class="bi bi-mortarboard nav-icon"></i>
+      <span class="nav-label">Enrollments</span>
+    </a>
+    <a class="nav-link-item {{ 'active' if request.endpoint and 'students_mgmt' in request.endpoint }}"
+       href="{{ url_for('students_mgmt.list_students') }}" data-label="Students">
+      <i class="bi bi-mortarboard nav-icon"></i>
+      <span class="nav-label">Students</span>
+    </a>
+    <a class="nav-link-item {{ 'active' if request.endpoint and 'faculty_mgmt' in request.endpoint }}"
+       href="{{ url_for('faculty_mgmt.list_faculty') }}" data-label="Faculty">
+      <i class="bi bi-person-badge nav-icon"></i>
+      <span class="nav-label">Faculty</span>
+    </a>
+
+    <div class="nav-section-label">Operations</div>
+    <a class="nav-link-item {{ 'active' if request.endpoint and 'sessions' in request.endpoint }}"
+       href="{{ url_for('sessions.list_sessions') }}" data-label="Sessions">
+      <i class="bi bi-calendar2-check nav-icon"></i>
+      <span class="nav-label">Sessions</span>
+    </a>
+    <a class="nav-link-item {{ 'active' if request.endpoint and 'timetable' in request.endpoint }}"
+       href="{{ url_for('timetable.view_timetable') }}" data-label="Timetable">
+      <i class="bi bi-table nav-icon"></i>
+      <span class="nav-label">Timetable</span>
+    </a>
+    <a class="nav-link-item {{ 'active' if request.endpoint and 'cameras' in request.endpoint }}"
+       href="{{ url_for('cameras.list_cameras') }}" data-label="Cameras">
+      <i class="bi bi-camera-video nav-icon"></i>
+      <span class="nav-label">Cameras</span>
+    </a>
+    <a class="nav-link-item {{ 'active' if request.endpoint and 'holidays' in request.endpoint }}"
+       href="{{ url_for('timetable.holidays') }}" data-label="Holidays">
+      <i class="bi bi-umbrella nav-icon"></i>
+      <span class="nav-label">Holidays</span>
+    </a>
+
+    <div class="nav-section-label">Reports</div>
+    <a class="nav-link-item {{ 'active' if request.endpoint and 'reports' in request.endpoint }}"
+       href="{{ url_for('admin_reports.reports_home') }}" data-label="Reports">
+      <i class="bi bi-bar-chart-line nav-icon"></i>
+      <span class="nav-label">Reports</span>
+    </a>
+    <a class="nav-link-item {{ 'active' if request.endpoint and 'defaulters' in request.endpoint }}"
+       href="{{ url_for('admin_reports.defaulters') }}" data-label="Defaulters">
+      <i class="bi bi-exclamation-triangle nav-icon"></i>
+      <span class="nav-label">Defaulters</span>
+    </a>
+
+    <div class="nav-section-label">System</div>
+    <a class="nav-link-item {{ 'active' if request.endpoint and 'settings' in request.endpoint }}"
+       href="{{ url_for('settings.view_settings') }}" data-label="Settings">
+      <i class="bi bi-gear nav-icon"></i>
+      <span class="nav-label">Settings</span>
+    </a>
+
+    {% elif current_user.role == 'faculty' %}
+    <div class="nav-section-label">Main</div>
+    <a class="nav-link-item {{ 'active' if request.endpoint == 'faculty.dashboard' }}"
+       href="{{ url_for('faculty.dashboard') }}" data-label="Dashboard">
+      <i class="bi bi-speedometer2 nav-icon"></i>
+      <span class="nav-label">Dashboard</span>
+    </a>
+
+    <a class="nav-link-item {{ 'active' if request.endpoint == 'faculty.profile' }}"
+        href="{{ url_for('faculty.profile') }}"
+        data-label="My Profile">
+
+          <i class="bi bi-person-circle nav-icon"></i>
+
+          <span class="nav-label">
+              My Profile
+          </span>
+
+      </a>
+    <div class="nav-section-label">Reports</div>
+    <a class="nav-link-item {{ 'active' if request.endpoint and 'faculty_reports' in request.endpoint }}"
+       href="{{ url_for('faculty_reports.reports_home') }}" data-label="Reports">
+      <i class="bi bi-bar-chart-line nav-icon"></i>
+      <span class="nav-label">Reports</span>
+    </a>
+    <a class="nav-link-item {{ 'active' if request.endpoint and 'defaulters' in request.endpoint }}"
+       href="{{ url_for('faculty_reports.my_defaulters') }}" data-label="Defaulters">
+      <i class="bi bi-exclamation-triangle nav-icon"></i>
+      <span class="nav-label">Defaulters</span>
+    </a>
+
+    {% elif current_user.role == 'hod' %}
+    <div class="nav-section-label">Main</div>
+    <a class="nav-link-item {{ 'active' if request.endpoint == 'hod.dashboard' }}"
+       href="{{ url_for('hod.dashboard') }}" data-label="Dashboard">
+      <i class="bi bi-speedometer2 nav-icon"></i>
+      <span class="nav-label">Dashboard</span>
+    </a>
+
+    {% elif current_user.role == 'student' %}
+    <div class="nav-section-label">Main</div>
+    <a class="nav-link-item {{ 'active' if request.endpoint == 'student.dashboard' }}"
+       href="{{ url_for('student.dashboard') }}" data-label="Dashboard">
+      <i class="bi bi-speedometer2 nav-icon"></i>
+      <span class="nav-label">Dashboard</span>
+    </a>
+    {% endif %}
+
+  </nav>
+</div>
+
+<!-- Main Area -->
+<div id="main-area">
+  <!-- Topbar -->
+  <div id="topbar">
+    <button id="toggle-sidebar" title="Toggle Sidebar">
+      <i class="bi bi-list"></i>
+    </button>
+    <span class="page-title">{% block page_title %}{% endblock %}</span>
+
+    <div class="topbar-right">
+      <!-- Theme Switcher -->
+      <div class="dropdown">
+        <button class="theme-switch-btn" data-bs-toggle="dropdown" title="Change theme">
+          <i class="bi bi-palette2"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-1" style="min-width:150px">
+          <li>
+            <button class="dropdown-item theme-option d-flex align-items-center gap-2 rounded" data-theme-value="light">
+              <i class="bi bi-sun"></i> Light
+            </button>
+          </li>
+          <li>
+            <button class="dropdown-item theme-option d-flex align-items-center gap-2 rounded" data-theme-value="dark">
+              <i class="bi bi-moon-stars"></i> Dark
+            </button>
+          </li>
+          <li>
+            <button class="dropdown-item theme-option d-flex align-items-center gap-2 rounded" data-theme-value="graphite">
+              <i class="bi bi-circle-half"></i> Graphite
+            </button>
+          </li>
+        </ul>
+      </div>
+      <!-- User Menu -->
+      <div class="dropdown">
+        <button class="btn btn-sm btn-light border dropdown-toggle d-flex align-items-center gap-2"
+                data-bs-toggle="dropdown">
+          <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);
+                      display:flex;align-items:center;justify-content:center;color:#fff;font-size:.75rem;font-weight:600">
+            {{ current_user.full_name[0].upper() }}
+          </div>
+          <span class="d-none d-md-inline small fw-semibold">{{ current_user.full_name.split()[0] }}</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="min-width:200px">
+          <li class="px-3 py-2">
+            <div class="fw-semibold small">{{ current_user.full_name }}</div>
+            <div class="text-muted" style="font-size:.75rem">{{ current_user.email }}</div>
+            <span class="badge mt-1" style="background:#e0e7ff;color:#4338ca;font-size:.65rem">
+              {{ current_user.role | title }}
+            </span>
+          </li>
+          <li><hr class="dropdown-divider my-1"></li>
+          <li>
+            <a class="dropdown-item small" href="{{ url_for('auth.change_password') }}">
+              <i class="bi bi-key me-2 text-muted"></i>Change Password
+            </a>
+          </li>
+          <li><hr class="dropdown-divider my-1"></li>
+          <li>
+            <form method="post" action="{{ url_for('auth.logout') }}" class="m-0">
+              <button type="submit" class="dropdown-item small text-danger">
+                <i class="bi bi-box-arrow-right me-2"></i>Logout
+              </button>
+            </form>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flash Messages -->
+  <div class="px-4 pt-3">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
+      {% if category == 'danger' %}<i class="bi bi-exclamation-circle-fill"></i>
+      {% elif category == 'success' %}<i class="bi bi-check-circle-fill"></i>
+      {% elif category == 'warning' %}<i class="bi bi-exclamation-triangle-fill"></i>
+      {% else %}<i class="bi bi-info-circle-fill"></i>{% endif %}
+      <span>{{ message }}</span>
+      <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Page Content -->
+  <main id="page-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center text-muted py-3 border-top small">
+    AI-Based Automated Attendance System &copy; {{ now().year }}
+  </footer>
+</div>
+
+{% else %}
+<!-- Auth Layout -->
+<div class="auth-wrapper">
+  <div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="row justify-content-center mt-3">
+      <div class="col-md-5">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    {% endwith %}
+  </div>
+  {% block auth_content %}{% endblock %}
+</div>
+{% endif %}
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+<script>
+// Sidebar toggle
+(function() {
+  const sidebar = document.getElementById('sidebar');
+  const btn = document.getElementById('toggle-sidebar');
+  if (!sidebar || !btn) return;
+
+  // Restore state
+  const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+  if (isCollapsed) sidebar.classList.add('collapsed');
+
+  btn.addEventListener('click', function() {
+    // Mobile
+    if (window.innerWidth <= 768) {
+      sidebar.classList.toggle('mobile-open');
+      return;
+    }
+    sidebar.classList.toggle('collapsed');
+    localStorage.setItem('sidebar_collapsed', sidebar.classList.contains('collapsed'));
+  });
+
+  // Close on outside click (mobile)
+  document.addEventListener('click', function(e) {
+    if (window.innerWidth <= 768 &&
+        sidebar.classList.contains('mobile-open') &&
+        !sidebar.contains(e.target) && e.target !== btn) {
+      sidebar.classList.remove('mobile-open');
+    }
+  });
+})();
+
+// Prevent cached page after logout
+window.addEventListener('pageshow', function(e) {
+  if (e.persisted) window.location.reload();
+});
+</script>
+
+<script>
+(function() {
+  function applyTheme(value) {
+    document.documentElement.setAttribute('data-theme', value);
+    document.documentElement.setAttribute('data-bs-theme', value === 'light' ? 'light' : 'dark');
+    localStorage.setItem('app_theme', value);
+    document.querySelectorAll('.theme-option').forEach(function(btn) {
+      btn.classList.toggle('active', btn.dataset.themeValue === value);
+    });
+  }
+
+  document.querySelectorAll('.theme-option').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      applyTheme(this.dataset.themeValue);
+    });
+  });
+
+  // Highlight the currently active option on load
+  applyTheme(localStorage.getItem('app_theme') || 'graphite');
+})();
+</script>
+
+{% block extra_js %}
+<link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+{% endblock %}
+</body>
+</html>

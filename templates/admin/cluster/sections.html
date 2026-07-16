@@ -1,0 +1,185 @@
+
+{% block content %}
+
+<!-- {% if active_tab=="sections" %}
+
+<div class="card">
+
+<div class="card-header">
+
+<h5>Sections</h5>
+
+</div>
+
+<div class="card-body">
+
+<table class="table">
+
+<thead>
+
+<tr>
+
+<th>Semester</th>
+
+<th>Section</th>
+
+<th>Room</th>
+
+<th>Students</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for s in sections %}
+
+<tr>
+
+<td>{{s.sem_number}}</td>
+
+<td>{{s.section_label}}</td>
+
+<td>{{s.room}}</td>
+
+<td>{{s.student_count}}</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+{% endif %} -->
+
+<form
+method="POST"
+action="{{ url_for('academic.update_cluster_sections',
+cluster_id=cluster.id) }}">
+
+<div class="card shadow-sm">
+
+<div class="card-header">
+
+<h5>
+
+Manage Sections
+
+</h5>
+
+</div>
+
+<div class="card-body">
+
+<input
+
+type="text"
+
+id="sectionSearch"
+
+class="form-control mb-3"
+
+placeholder="Search section...">
+
+<div class="row">
+
+{% for s in all_sections %}
+
+<div class="col-md-3 mb-3">
+
+<div class="form-check">
+
+<input
+
+class="form-check-input"
+
+type="checkbox"
+
+name="section_ids"
+
+value="{{s.id}}"
+
+{% if s.cluster_id==cluster.id %}
+checked
+{% endif %}
+
+>
+
+<label
+class="form-check-label">
+
+<b>
+
+Semester {{s.sem_number}}
+
+</b>
+
+<br>
+
+Section {{s.section_label}}
+
+</label>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+<hr>
+
+<button
+class="btn btn-primary">
+
+Save Section Assignment
+
+</button>
+
+</div>
+
+</div>
+
+</form>
+
+<script>
+
+document
+.getElementById("sectionSearch")
+.addEventListener("keyup",function(){
+
+let value=this.value.toLowerCase();
+
+document
+.querySelectorAll(".form-check")
+.forEach(function(item){
+
+item.parentElement.style.display=
+
+item.innerText
+.toLowerCase()
+.includes(value)
+
+?
+
+"block"
+
+:
+
+"none";
+
+});
+
+});
+
+</script>
+
+{% endblock %}

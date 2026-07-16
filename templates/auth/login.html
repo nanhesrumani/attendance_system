@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Login — Attendance System{% endblock %}
+
+{% block auth_content %}
+<div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-md-5 col-lg-4">
+
+            <!-- Logo / Title -->
+            <div class="text-center mb-4">
+                <div class="auth-logo mb-3">
+                    <i class="bi bi-camera-video-fill text-primary" style="font-size: 3rem;"></i>
+                </div>
+                <h3 class="fw-bold">AttendAI</h3>
+                <p class="text-muted">AI-Based Automated Attendance System</p>
+            </div>
+
+            <!-- Login Card -->
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h5 class="card-title text-center mb-4">Sign In</h5>
+
+                    <form method="POST" action="{{ url_for('auth.login', next=request.args.get('next', '')) }}">
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label">
+                                <i class="bi bi-envelope"></i> Email
+                            </label>
+                            <input type="email"
+                                   class="form-control"
+                                   id="email"
+                                   name="email"
+                                   placeholder="you@college.edu"
+                                   required
+                                   autofocus>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-3">
+                            <label for="password" class="form-label">
+                                <i class="bi bi-lock"></i> Password
+                            </label>
+                            <div class="input-group">
+                                <input type="password"
+                                       class="form-control"
+                                       id="password"
+                                       name="password"
+                                       placeholder="••••••••"
+                                       required>
+                                <button class="btn btn-outline-secondary"
+                                        type="button"
+                                        onclick="togglePassword('password', this)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-box-arrow-in-right"></i> Sign In
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Register Link -->
+            <div class="text-center mt-3">
+                <p class="text-muted mb-1">
+                    New student?
+                    <a href="{{ url_for('auth.register') }}" class="text-decoration-none fw-semibold">
+                        Register here
+                    </a>
+                </p>
+                <small class="text-muted">
+                    Single login works for Admin, Faculty, and Student accounts.
+                </small>
+            </div>
+
+            <!-- Role Info -->
+            <div class="row mt-4 g-2">
+                <div class="col-4">
+                    <div class="card bg-light border-0 text-center p-2">
+                        <small class="text-muted">
+                            <i class="bi bi-shield-check text-success"></i><br>
+                            Admin
+                        </small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="card bg-light border-0 text-center p-2">
+                        <small class="text-muted">
+                            <i class="bi bi-person-workspace text-primary"></i><br>
+                            Faculty
+                        </small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="card bg-light border-0 text-center p-2">
+                        <small class="text-muted">
+                            <i class="bi bi-mortarboard text-warning"></i><br>
+                            Student
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}My Attendance{% endblock %}
+{% block page_title %}My Attendance Dashboard{% endblock %}
+
+{% block content %}
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% elif student %}
+<!-- insert right after the Student Info card -->
+<div class="mb-3">
+  <a href="{{ url_for('student_registration.registration_home') }}" class="btn btn-outline-primary btn-sm">
+    <i class="bi bi-pencil-square"></i> Register Electives / AEC-SEC
+  </a>
+</div>
+<!-- Student Info -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body py-2">
+        <div class="row align-items-center">
+            <div class="col-md-3">
+                <strong>{{ student.usn }}</strong> — {{ current_user.full_name }}
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted">Section:</small>
+                <span class="badge bg-dark">{{ student.dept_code or '' }}-{{ student.section_label or '—' }}</span>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted">Semester:</small> {{ student.current_sem or '—' }}
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted">Overall:</small>
+                <span class="badge bg-{{ 'danger' if overall_pct < 75 else 'warning' if overall_pct < 85 else 'success' }} fs-6">
+                    {{ overall_pct }}%
+                </span>
+                <small class="text-muted">({{ overall_present }}/{{ overall_total }})</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alerts -->
+{% if alerts %}
+<div class="mb-3">
+    {% for alert in alerts %}
+    <div class="alert alert-{{ alert.type }} py-2 mb-2 small">
+        {{ alert.message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Subject-wise Attendance Table -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h6 class="mb-0"><i class="bi bi-book"></i> Subject-wise Attendance</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Code</th>
+                        <th>Subject</th>
+                        <th>Type</th>
+                        <th>Faculty</th>
+                        <th>Total</th>
+                        <th>Present</th>
+                        <th>Absent</th>
+                        <th>Attendance %</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in subjects %}
+                    <tr>
+                        <td><code class="fs-6">{{ s.subject_code }}</code></td>
+                        <td>{{ s.subject_name }}</td>
+                        <td><span class="badge bg-secondary">{{ s.subject_type }}</span></td>
+                        <td><small>{{ s.faculty_name }}</small></td>
+                        <td>{{ s.total }}</td>
+                        <td class="text-success fw-bold">{{ s.present }}</td>
+                        <td class="text-danger">{{ s.absent }}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress flex-grow-1" style="height:22px; min-width:100px;">
+                                    <div class="progress-bar bg-{{ s.color }}"
+                                         style="width: {{ s.percentage }}%">
+                                        {{ s.percentage }}%
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('student.subject_history', subject_id=s.subject_id) }}"
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-list-ul"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Legend -->
+<div class="mt-3 small text-muted">
+    <i class="bi bi-circle-fill text-success"></i> ≥ 85% (Safe)
+    <i class="bi bi-circle-fill text-warning ms-3"></i> 75-85% (Warning)
+    <i class="bi bi-circle-fill text-danger ms-3"></i> &lt; 75% (Defaulter)
+</div>
+
+{% endif %}
+{% endblock %}

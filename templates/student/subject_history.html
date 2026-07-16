@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Attendance History — {{ subject.code }}{% endblock %}
+{% block page_title %}Session History — {{ subject.code }}: {{ subject.name }}{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{{ url_for('student.dashboard') }}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h6 class="mb-0">
+            <i class="bi bi-calendar-check"></i> Session-by-Session Attendance
+            <span class="text-muted ms-2 small">({{ history|length }} sessions)</span>
+        </h6>
+    </div>
+    <div class="card-body p-0">
+        {% if history %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle small">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Method</th>
+                        <th>Recognition Score</th>
+                        <th>Marked At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for h in history %}
+                    <tr class="{{ 'table-success' if h.status == 'present' else 'table-danger' if h.status == 'absent' else '' }}">
+                        <td>{{ loop.index }}</td>
+                        <td class="fw-semibold">{{ h.session_date }}</td>
+                        <td>{{ h.start_time }} - {{ h.end_time }}</td>
+                        <td><span class="badge bg-secondary">{{ h.slot_type }}</span></td>
+                        <td>
+                            {% if h.status == 'present' %}
+                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> Present</span>
+                            {% elif h.status == 'absent' %}
+                            <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Absent</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ h.status or 'N/A' }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if h.method %}
+                            <small>
+                                {% if h.method == 'face_recognition' %}
+                                <i class="bi bi-person-bounding-box text-primary"></i> Face
+                                {% elif 'manual' in (h.method or '') %}
+                                <i class="bi bi-pencil text-warning"></i> Manual
+                                {% else %}
+                                {{ h.method }}
+                                {% endif %}
+                            </small>
+                            {% else %}—{% endif %}
+                        </td>
+                        <td>
+                            {% if h.recognition_score %}
+                            <span class="badge bg-info">{{ '%.3f'|format(h.recognition_score) }}</span>
+                            {% else %}—{% endif %}
+                        </td>
+                        <td><small>{{ h.marked_at or '—' }}</small></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-calendar-x fs-1"></i>
+            <p class="mt-2">No attendance records found for this subject.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Summary -->
+{% if history %}
+{% set present_count = history|selectattr('status', 'equalto', 'present')|list|length %}
+{% set total_count = history|length %}
+{% set pct = ((present_count / total_count) * 100)|round(1) if total_count > 0 else 0 %}
+<div class="card shadow-sm mt-3" style="max-width:400px">
+    <div class="card-body">
+        <h6>Summary</h6>
+        <div class="row text-center">
+            <div class="col-4">
+                <h4 class="text-success fw-bold mb-0">{{ present_count }}</h4>
+                <small class="text-muted">Present</small>
+            </div>
+            <div class="col-4">
+                <h4 class="text-danger fw-bold mb-0">{{ total_count - present_count }}</h4>
+                <small class="text-muted">Absent</small>
+            </div>
+            <div class="col-4">
+                <h4 class="fw-bold mb-0 text-{{ 'danger' if pct < 75 else 'warning' if pct < 85 else 'success' }}">
+                    {{ pct }}%
+                </h4>
+                <small class="text-muted">Percentage</small>
+            </div>
+        </div>
+        <div class="progress mt-2" style="height:10px">
+            <div class="progress-bar bg-{{ 'danger' if pct < 75 else 'warning' if pct < 85 else 'success' }}"
+                 style="width:{{ pct }}%"></div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

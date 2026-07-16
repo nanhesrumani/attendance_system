@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block page_title %}Attendance Reports{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Section Reports -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white"><h6 class="mb-0"><i class="bi bi-bar-chart-line"></i> Section-wise Report</h6></div>
+            <div class="card-body">
+                <form method="GET" action="" id="sectionReportForm">
+                    <div class="mb-3">
+                        <label class="form-label">Select Section</label>
+                        <select class="form-select" id="reportSection" required>
+                            <option value="">Choose...</option>
+                            {% for s in sections %}
+                            <option value="{{ s.id }}">{{ s.dept_code }}-{{ s.section_label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col"><label class="form-label small">From</label><input type="date" class="form-control form-control-sm" id="reportFrom"></div>
+                        <div class="col"><label class="form-label small">To</label><input type="date" class="form-control form-control-sm" id="reportTo"></div>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="openSectionReport()"><i class="bi bi-eye"></i> View Report</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Defaulters -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white"><h6 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Defaulter Report</h6></div>
+            <div class="card-body">
+                <p class="text-muted small">Students with attendance below the threshold across all subjects.</p>
+                <form method="GET" action="{{ url_for('admin_reports.defaulters') }}">
+                    <div class="mb-3">
+                        <label class="form-label">Threshold (%)</label>
+                        <input type="number" class="form-control" name="threshold" value="75" min="1" max="100">
+                    </div>
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-exclamation-triangle"></i> View Defaulters</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openSectionReport() {
+    const secId = document.getElementById('reportSection').value;
+    if (!secId) { alert('Select a section'); return; }
+    let url = '/admin/reports/section/' + secId;
+    const from = document.getElementById('reportFrom').value;
+    const to = document.getElementById('reportTo').value;
+    const params = [];
+    if (from) params.push('from=' + from);
+    if (to) params.push('to=' + to);
+    if (params.length) url += '?' + params.join('&');
+    window.location.href = url;
+}
+</script>
+{% endblock %}

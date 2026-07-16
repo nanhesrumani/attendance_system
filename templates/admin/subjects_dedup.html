@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% block title %}Subject Deduplication{% endblock %}
+{% block page_title %}Subject Deduplication{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body d-flex justify-content-between align-items-center">
+      <div>
+        <h4 class="mb-1">Duplicate Subjects</h4>
+        <div class="text-muted small">
+          Same subject entered under different codes/names (e.g. <code>BCS601</code> vs
+          <code>CC</code> for Cloud Computing) show up here. Review each pair and merge —
+          merging repoints every timetable slot, session, faculty assignment and cluster
+          link onto the subject you keep, and remembers the old code/name as an alias so
+          it auto-matches next time.
+        </div>
+      </div>
+      <button class="btn btn-primary" id="rescanBtn">
+        <i class="bi bi-arrow-repeat"></i> Rescan
+      </button>
+    </div>
+  </div>
+
+  <div id="loadingBox" class="text-center text-muted py-5">
+    <div class="spinner-border text-primary mb-2"></div>
+    <div>Scanning subjects for duplicates…</div>
+  </div>
+
+  <div id="emptyBox" class="card border-0 shadow-sm d-none">
+    <div class="card-body text-center text-muted py-5">
+      <i class="bi bi-check-circle display-4 text-success"></i>
+      <h5 class="mt-3">No duplicates found</h5>
+      <div>Every subject in the same department/semester looks distinct.</div>
+    </div>
+  </div>
+
+  <div id="suggestionsList"></div>
+
+</div>
+
+<!-- Merge confirmation modal -->
+<div class="modal fade" id="mergeModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirm Merge</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Keep <strong id="mmKeepName"></strong> as the subject record.</p>
+        <p>Discard <strong id="mmDropName"></strong> — its code and name will be saved as
+          aliases so future timetable uploads recognize it automatically.</p>
+        <div class="alert alert-warning small mb-0">
+          <i class="bi bi-exclamation-triangle"></i>
+          This repoints all timetable slots, sessions, faculty assignments and cluster
+          links, then deletes the duplicate row. It cannot be undone from this screen.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-danger" id="confirmMergeBtn">
+          <i class="bi bi-arrow-left-right"></i> Merge
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let pendingMerge = null; // {primary_id, duplicate_id}
+let mergeModal;
+
+document.addEventListener("DOMContentLoaded", function () {
+  mergeModal = new bootstrap.Modal(document.getElementById("mergeModal"));
+  loadDuplicates();
+  document.getElementById("rescanBtn").addEventListener("click", loadDuplicates);
+  document.getElementById("confirmMergeBtn").addEventListener("click", doMerge);
+});
+
+function loadDuplicates() {
+  document.getElementById("loadingBox").classList.remove("d-none");
+  document.getElementById("emptyBox").classList.add("d-none");
+  document.getElementById("suggestionsList").innerHTML = "";
+
+  fetch("{{ url_for('subj_maint.find_duplicates') }}", {
+    headers: { "X-Requested-With": "XMLHttpRequest" }
+  })
+    .then(r => r.json())
+    .then(data => renderSuggestions(data.suggestions || []))
+    .catch(() => showToast("Could not load duplicate scan.", "danger"))
+    .finally(() => document.getElementById("loadingBox").classList.add("d-none"));
+}
+
+function renderSuggestions(suggestions) {
+  const list = document.getElementById("suggestionsList");
+  if (!suggestions.length) {
+    document.getElementById("emptyBox").classList.remove("d-none");
+    return;
+  }
+
+  list.innerHTML = suggestions.map((s, idx) => {
+    const a = s.subject_a, b = s.subject_b;
+    const pct = Math.round(s.similarity * 100);
+    const badge = s.acronym_match
+      ? '<span class="badge bg-danger">Acronym match</span>'
+      : `<span class="badge bg-warning text-dark">${pct}% similar</span>`;
+
+    return `
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+
+          <div class="row flex-grow-1 g-3">
+            <div class="col-md-5">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Option A</div>
+                <div class="fw-bold">${escapeHtml(a.name)}</div>
+                <div class="text-muted small">Code: ${escapeHtml(a.code)} &middot; Sem ${a.sem_number}</div>
+              </div>
+            </div>
+            <div class="col-md-2 d-flex align-items-center justify-content-center">
+              <i class="bi bi-arrow-left-right fs-4 text-muted"></i>
+            </div>
+            <div class="col-md-5">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Option B</div>
+                <div class="fw-bold">${escapeHtml(b.name)}</div>
+                <div class="text-muted small">Code: ${escapeHtml(b.code)} &middot; Sem ${b.sem_number}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-end" style="min-width:220px;">
+            <div class="mb-2">${badge}</div>
+            <div class="btn-group w-100">
+              <button class="btn btn-sm btn-outline-primary"
+                onclick='openMerge(${a.id}, ${b.id}, ${JSON.stringify(a.name)}, ${JSON.stringify(b.name)})'>
+                Keep A, drop B
+              </button>
+              <button class="btn btn-sm btn-outline-primary"
+                onclick='openMerge(${b.id}, ${a.id}, ${JSON.stringify(b.name)}, ${JSON.stringify(a.name)})'>
+                Keep B, drop A
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function openMerge(primaryId, duplicateId, keepName, dropName) {
+  pendingMerge = { primary_id: primaryId, duplicate_id: duplicateId };
+  document.getElementById("mmKeepName").textContent = keepName;
+  document.getElementById("mmDropName").textContent = dropName;
+  mergeModal.show();
+}
+
+function doMerge() {
+  if (!pendingMerge) return;
+  const btn = document.getElementById("confirmMergeBtn");
+  btn.disabled = true;
+
+  const body = new URLSearchParams();
+  body.set("primary_id", pendingMerge.primary_id);
+  body.set("duplicate_id", pendingMerge.duplicate_id);
+
+  fetch("{{ url_for('subj_maint.merge_subjects') }}", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "X-Requested-With": "XMLHttpRequest"
+    },
+    body: body
+  })
+    .then(r => r.json())
+    .then(data => {
+      mergeModal.hide();
+      if (data.success) {
+        showToast(data.message || "Merged.", "success");
+        loadDuplicates();
+      } else {
+        showToast(data.message || "Merge failed.", "danger");
+      }
+    })
+    .catch(() => showToast("Merge request failed.", "danger"))
+    .finally(() => { btn.disabled = false; pendingMerge = null; });
+}
+
+function escapeHtml(str) {
+  const d = document.createElement("div");
+  d.textContent = str == null ? "" : str;
+  return d.innerHTML;
+}
+</script>
+{% endblock %}

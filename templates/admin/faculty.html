@@ -1,0 +1,442 @@
+{% extends "base.html" %}
+{% block title %}Faculty{% endblock %}
+{% block page_title %}Faculty Management{% endblock %}
+
+{% block content %}
+<form method="GET" class="row g-2 mb-3">
+
+    <div class="col-md-4">
+        <input
+            type="text"
+            name="search"
+            class="form-control"
+            placeholder="Search faculty..."
+            value="{{ request.args.get('search','') }}">
+    </div>
+
+    <div class="col-md-3">
+        <select class="form-select" name="department">
+
+            <option value="">All Departments</option>
+
+            {% for d in departments %}
+
+            <option
+                value="{{ d.id }}"
+                {% if request.args.get('department')==d.id|string %}
+                selected
+                {% endif %}
+            >
+                {{ d.code }}
+            </option>
+
+            {% endfor %}
+
+        </select>
+    </div>
+
+    <div class="col-md-3">
+
+        <select class="form-select" name="status">
+
+            <option value="">All Status</option>
+
+            <option value="verified"
+            {% if request.args.get('status')=="verified" %}
+            selected
+            {% endif %}
+            >
+                Verified
+            </option>
+
+            <option value="pending"
+            {% if request.args.get('status')=="pending" %}
+            selected
+            {% endif %}
+            >
+                Pending
+            </option>
+
+            <option value="suspended"
+            {% if request.args.get('status')=="suspended" %}
+            selected
+            {% endif %}
+            >
+                Suspended
+            </option>
+
+        </select>
+
+    </div>
+
+    <div class="col-md-2 d-grid">
+
+        <button class="btn btn-primary">
+
+            <i class="bi bi-search"></i>
+
+            Search
+
+        </button>
+
+        <a href="{{ url_for('faculty_mgmt.list_faculty') }}"
+            class="btn btn-outline-secondary">
+
+                Reset
+
+            </a>
+    </div>
+
+</form>
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white"><h6 class="mb-0"><i class="bi bi-person-workspace"></i> Faculty ({{ faculty|length }} Results)</h6></div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle small">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Code</th>
+                            <th>Dept</th>
+                            <th>Designation</th>
+                            <th>Last Login</th>
+                            <th>Subjects</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {% for f in faculty %}
+                            <tr>
+                                <td class="fw-semibold">{{ f.full_name }}</td>
+                                <td>
+
+                                    <div class="fw-semibold">
+
+                                        {{ f.email }}
+
+                                    </div>
+
+                                    {% if f.profile_completed %}
+
+                                        <span class="badge bg-success">
+
+                                            Verified
+
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="badge bg-warning text-dark">
+
+                                            Temporary Account
+
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+                                <td><code>{{ f.faculty_code or '—' }}</code></td>
+                                <td>{{ f.dept_code or '—' }}</td>
+                                <td><small>{{ f.designation or '—' }}</small></td>
+                            <td>
+
+                            {% if f.last_login %}
+
+                                {{ f.last_login.strftime('%d-%b-%Y') }}
+
+                                <br>
+
+                                <small class="text-muted">
+
+                                    {{ f.last_login.strftime('%I:%M %p') }}
+
+                                </small>
+
+                            {% else %}
+
+                                <span class="text-muted">
+
+                                    Never
+
+                                </span>
+
+                            {% endif %}
+
+                            </td>
+
+                                <td><a href="{{ url_for('faculty_mgmt.faculty_subjects', faculty_id=f.faculty_id) }}" class="badge bg-info text-decoration-none">{{ f.subject_count }}</a></td>
+                                <td>
+
+                                {% if f.user_status=="active" %}
+
+                                <span class="badge bg-success">
+
+                                🟢 Active
+
+                                </span>
+
+                                {% else %}
+
+                                <span class="badge bg-danger">
+
+                                🔴 Suspended
+
+                                </span>
+
+                                {% endif %}
+
+                                </td>
+                                <td>
+
+                                <div class="btn-group">
+
+                                <button
+                                class="btn btn-sm btn-light border"
+
+                                data-bs-toggle="dropdown">
+
+                                <i class="bi bi-three-dots-vertical"></i>
+
+                                </button>
+
+                                <ul class="dropdown-menu dropdown-menu-end">
+
+                                <li>
+                                <button
+                                class="dropdown-item"
+                                data-bs-toggle="modal"
+                                data-bs-target="#editFac{{ f.faculty_id }}">
+                                <i class="bi bi-pencil"></i>
+                                Edit
+                                </button>
+                                </li>
+
+                                <li>
+                                <a
+                                class="dropdown-item"
+                                href="{{ url_for('faculty_mgmt.faculty_subjects', faculty_id=f.faculty_id) }}">
+                                <i class="bi bi-book"></i>
+                                View Subjects
+                                </a>
+                                </li>
+
+                                <li>
+                                <form method="POST"
+                                action="{{ url_for('faculty_mgmt.reset_faculty_password', faculty_id=f.faculty_id) }}">
+                                <button class="dropdown-item">
+                                <i class="bi bi-key"></i>
+                                Reset Password
+                                </button>
+                                </form>
+                                </li>
+
+                                {% if f.subject_count > 0 %}
+
+                                <li>
+                                <form method="POST"
+                                action="{{ url_for('faculty_mgmt.toggle_faculty_status', faculty_id=f.faculty_id) }}">
+                                <button class="dropdown-item">
+                                <i class="bi bi-pause-circle"></i>
+                                {{ 'Suspend' if f.user_status=='active' else 'Activate' }}
+                                </button>
+                                </form>
+                                </li>
+
+                                {% else %}
+
+                                <li><hr class="dropdown-divider"></li>
+
+                                <li>
+
+                                <form method="POST"
+                                onsubmit="return confirm('Delete this faculty permanently?');"
+                                action="{{ url_for('faculty_mgmt.delete_faculty', faculty_id=f.faculty_id) }}">
+
+                                <button class="dropdown-item text-danger">
+
+                                <i class="bi bi-trash"></i>
+
+                                Delete Faculty
+
+                                </button>
+
+                                </form>
+
+                                </li>
+
+                                {% endif %}
+
+                                </ul>
+
+                                </div>
+
+                                </td>
+                            </tr>
+                            <!-- Edit Modal -->
+                            <div class="modal fade" id="editFac{{ f.faculty_id }}" tabindex="-1">
+                                <div class="modal-dialog"><div class="modal-content">
+                                    <form method="POST" action="{{ url_for('faculty_mgmt.edit_faculty', faculty_id=f.faculty_id) }}">
+                                        <div class="modal-header"><h6 class="modal-title">Edit Faculty</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                        <div class="modal-body">
+                                            <div class="mb-2"><label class="form-label">Name</label><input type="text" class="form-control" name="full_name" value="{{ f.full_name }}"></div>
+                                            <div class="mb-2"><label class="form-label">Phone</label><input type="tel" class="form-control" name="phone" value="{{ f.phone or '' }}"></div>
+                                            <div class="mb-2"><label class="form-label">Faculty Code</label><input type="text" class="form-control" name="faculty_code" value="{{ f.faculty_code or '' }}"></div>
+                                            <div class="mb-2"><label class="form-label">Department</label>
+                                                <select class="form-select" name="department_id"><option value="">None</option>
+                                                    {% for d in departments %}<option value="{{ d.id }}" {{ 'selected' if d.id == f.department_id }}>{{ d.code }}</option>{% endfor %}
+                                                </select></div>
+                                            <div class="mb-2"><label class="form-label">Designation</label><input type="text" class="form-control" name="designation" value="{{ f.designation or '' }}"></div>
+                                            <div class="mb-2">
+
+                                            <label class="form-label">
+
+                                            Cluster
+
+                                            </label>
+
+                                            <select
+                                            class="form-select"
+                                            name="cluster_id">
+
+                                            <option value="">
+
+                                            No Cluster
+
+                                            </option>
+
+                                            {% for c in clusters %}
+
+                                            <option
+                                            value="{{ c.id }}"
+                                            {% if c.id==f.cluster_id %}
+                                            selected
+                                            {% endif %}
+                                            >
+
+                                            {{ c.cluster_name }}
+
+                                            </option>
+
+                                            {% endfor %}
+
+                                            </select>
+
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="form-label">Qualification</label>
+                                                <input
+                                                    type="text"
+                                                    class="form-control"
+                                                    name="qualification"
+                                                    value="{{ f.qualification or '' }}">
+                                            </div>
+
+                                            <div class="mb-2">
+                                                <label class="form-label">Specialization</label>
+                                                <input
+                                                    type="text"
+                                                    class="form-control"
+                                                    name="specialization"
+                                                    value="{{ f.specialization or '' }}">
+                                            </div>
+
+                                            <div class="mb-2">
+                                                <label class="form-label">Experience (Years)</label>
+                                                <input
+                                                    type="number"
+                                                    class="form-control"
+                                                    name="experience_years"
+                                                    value="{{ f.experience_years or 0 }}">
+                                            </div>
+
+                                            <div class="mb-2">
+                                                <label class="form-label">Joining Date</label>
+                                                <input
+                                                    type="date"
+                                                    class="form-control"
+                                                    name="joining_date"
+                                                    value="{{ f.joining_date }}">
+                                            </div>
+
+                                           
+                                            <div class="mb-2">
+                                                <label class="form-label">Remarks</label>
+                                                <textarea
+                                                    class="form-control"
+                                                    name="remarks"
+                                                    rows="2">{{ f.remarks or '' }}</textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer"><button type="submit" class="btn btn-primary">Save</button></div>
+                                    </form>
+                                </div></div>
+                            </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white"><h6 class="mb-0"><i class="bi bi-plus-circle"></i> Add Faculty</h6></div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('faculty_mgmt.add_faculty') }}">
+                    <div class="mb-3">
+                        <label class="form-label">Designation</label>
+                        <select class="form-select" name="designation" required>
+                            <option value="faculty">Faculty</option>
+                            <option value="hod">HOD</option>
+                        </select>
+                    </div>
+                    <div class="mb-2"><label class="form-label">Full Name *</label><input type="text" class="form-control" name="full_name" required></div>
+                    <div class="mb-2"><label class="form-label">Email *</label><input type="email" class="form-control" name="email" required></div>
+                    <div class="mb-2"><label class="form-label">Password *</label><input type="password" class="form-control" name="password" minlength="6" required></div>
+                    <div class="mb-2"><label class="form-label">Phone</label><input type="tel" class="form-control" name="phone"></div>
+                    <div class="mb-2"><label class="form-label">Faculty Code</label><input type="text" class="form-control" name="faculty_code"></div>
+                    <div class="mb-2"><label class="form-label">Department</label>
+                        <select class="form-select" name="department_id"><option value="">None</option>
+                            {% for d in departments %}<option value="{{ d.id }}">{{ d.code }}</option>{% endfor %}
+                        </select></div>
+
+                    <label class="form-label">
+
+                    Cluster
+
+                    </label>
+
+                    <select
+                    class="form-select"
+                    name="cluster_id">
+
+                    <option value="">
+
+                    No Cluster
+
+                    </option>
+
+                    {% for c in clusters %}
+
+                    <option value="{{ c.id }}">
+
+                    {{ c.cluster_name }}
+
+                    </option>
+
+                    {% endfor %}
+
+                    </select>
+
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 mt-2"><i class="bi bi-plus"></i> Add Faculty</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

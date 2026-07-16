@@ -1,0 +1,684 @@
+{% extends "base.html" %}
+{% block title %}Upload Timetable{% endblock %}
+{% block page_title %}Upload Timetable{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-xl-10 col-lg-11">
+
+    {# ── Breadcrumb ────────────────────────────────────────────────────── #}
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb small">
+        <li class="breadcrumb-item">
+          <a href="{{ url_for('timetable.view_timetable') }}">Timetable</a>
+        </li>
+        <li class="breadcrumb-item active">Upload</li>
+      </ol>
+    </nav>
+
+    {# ── Flash messages ────────────────────────────────────────────────── #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, msg in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show
+                    d-flex align-items-start gap-2" role="alert">
+          {# Pick icon by category #}
+          {% if category == 'success' %}
+            <i class="bi bi-check-circle-fill flex-shrink-0 mt-1"></i>
+          {% elif category == 'danger' %}
+            <i class="bi bi-x-circle-fill flex-shrink-0 mt-1"></i>
+          {% elif category == 'warning' %}
+            <i class="bi bi-exclamation-triangle-fill flex-shrink-0 mt-1"></i>
+          {% else %}
+            <i class="bi bi-info-circle-fill flex-shrink-0 mt-1"></i>
+          {% endif %}
+          <span>{{ msg }}</span>
+          <button type="button" class="btn-close ms-auto"
+                  data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endwith %}
+
+    <div class="row g-4">
+
+      {# ══════════════════════════════════════════════════════════════════
+         LEFT COLUMN — Upload form
+      ══════════════════════════════════════════════════════════════════ #}
+      <div class="col-lg-5">
+        <div class="card shadow-sm h-100">
+
+          <div class="card-header bg-white border-bottom">
+            <div class="d-flex align-items-center gap-2">
+              <span class="bg-primary text-white rounded p-1 lh-1">
+                <i class="bi bi-cloud-upload fs-5"></i>
+              </span>
+              <div>
+                <h6 class="mb-0 fw-semibold">Upload Timetable File</h6>
+                <p class="text-muted mb-0" style="font-size:.75rem;">
+                  CSV or PDF accepted
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <form method="POST"
+                  action="{{ url_for('timetable.upload_timetable') }}"
+                  enctype="multipart/form-data"
+                  id="uploadForm"
+                  novalidate>
+
+              {# ── Section ─────────────────────────────────────────────── #}
+              <div class="mb-3">
+                <label class="form-label fw-semibold" for="sectionSelect">
+                  Section <span class="text-danger">*</span>
+                </label>
+                <select class="form-select"
+                        name="section_id"
+                        id="sectionSelect"
+                        required>
+                  <option value="">— Choose a section —</option>
+                  {% for s in sections %}
+                    <option value="{{ s.id }}">
+                        {{ s.dept }}
+                        •
+                        Sem {{ s.sem_number }}
+                        •
+                        {{ s.section_label }}
+                        •
+                        {{ s.batch }}
+                    </option>
+                  {% endfor %}
+                </select>
+                <div class="invalid-feedback">Please select a section.</div>
+              </div>
+
+              {# ── File drop-zone ──────────────────────────────────────── #}
+              <div class="mb-3">
+                <label class="form-label fw-semibold">
+                  Timetable File <span class="text-danger">*</span>
+                </label>
+
+                {# Visible drop zone #}
+                <div id="dropZone"
+                     class="border border-2 border-dashed rounded-3 p-4
+                            text-center position-relative"
+                     style="border-color:#adb5bd !important;
+                            cursor:pointer;
+                            transition:border-color .2s, background .2s;">
+
+                  {# Hidden real input #}
+                  <input type="file"
+                         name="timetable_file"
+                         id="fileInput"
+                         class="position-absolute top-0 start-0 w-100 h-100
+                                opacity-0"
+                         style="cursor:pointer;"
+                         accept=".csv,.pdf"
+                         required>
+
+                  {# Default state #}
+                  <div id="dropDefault">
+                    <i class="bi bi-file-earmark-arrow-up display-6
+                              text-muted mb-2 d-block"></i>
+                    <p class="mb-1 fw-semibold text-muted">
+                      Drag & drop or click to browse
+                    </p>
+                    <p class="small text-muted mb-0">
+                      <span class="badge bg-success-subtle text-success
+                                   border border-success me-1">
+                        .csv
+                      </span>
+                      {% if pdf_support %}
+                        <span class="badge bg-danger-subtle text-danger
+                                     border border-danger">
+                          .pdf
+                        </span>
+                      {% else %}
+                        <span class="badge bg-secondary-subtle text-secondary
+                                     border border-secondary"
+                              title="Install pdfplumber to enable PDF support">
+                          .pdf (disabled)
+                        </span>
+                      {% endif %}
+                    </p>
+                  </div>
+
+                  {# Selected-file state (hidden until a file is picked) #}
+                  <div id="dropSelected" class="d-none">
+                    <i id="fileIcon"
+                       class="bi display-6 mb-2 d-block"></i>
+                    <p class="mb-0 fw-semibold" id="fileName"></p>
+                    <p class="small text-muted mb-1" id="fileSize"></p>
+                    <button type="button"
+                            class="btn btn-sm btn-outline-secondary mt-1"
+                            id="changeFile">
+                      <i class="bi bi-arrow-repeat me-1"></i>Change file
+                    </button>
+                  </div>
+
+                </div>
+
+                {% if not pdf_support %}
+                  <div class="form-text text-warning mt-1">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    PDF support disabled.
+                    Run <code>pip install pdfplumber</code> to enable.
+                  </div>
+                {% endif %}
+              </div>
+
+              {# ── Clear existing ──────────────────────────────────────── #}
+              <div class="mb-4">
+                <div class="form-check">
+                  <input class="form-check-input"
+                         type="checkbox"
+                         name="clear_existing"
+                         id="clearExisting">
+                  <label class="form-check-label fw-semibold"
+                         for="clearExisting">
+                    Deactivate existing slots before import
+                  </label>
+                </div>
+                <div class="form-text ms-4" style="color:#856404;">
+                  <i class="bi bi-exclamation-triangle me-1"></i>
+                  Slots with linked attendance sessions will be
+                  <strong>soft-deleted only</strong> — data is preserved.
+                </div>
+              </div>
+
+              {# ── Submit ──────────────────────────────────────────────── #}
+              <div class="d-grid gap-2">
+                <button type="submit"
+                        class="btn btn-primary"
+                        id="submitBtn">
+                  <i class="bi bi-upload me-2"></i>Upload &amp; Process
+                </button>
+                <a href="{{ url_for('timetable.view_timetable') }}"
+                   class="btn btn-outline-secondary">
+                  <i class="bi bi-arrow-left me-1"></i>Cancel
+                </a>
+              </div>
+
+              {# Faculty report download (shown only when relevant) #}
+              {% if session.get('last_created_faculty_accounts') %}
+                <hr class="my-3">
+                <a href="{{ url_for('timetable.download_created_faculty_report') }}"
+                   class="btn btn-outline-info btn-sm w-100">
+                  <i class="bi bi-download me-1"></i>
+                  Download Created Faculty Accounts Report
+                </a>
+              {% endif %}
+
+            </form>
+          </div>{# /card-body #}
+        </div>{# /card #}
+      </div>{# /col #}
+
+
+      {# ══════════════════════════════════════════════════════════════════
+         RIGHT COLUMN — Format guides + placeholder info
+      ══════════════════════════════════════════════════════════════════ #}
+      <div class="col-lg-7 d-flex flex-column gap-4">
+
+        {# ── CSV format card ─────────────────────────────────────────── #}
+        <div class="card shadow-sm">
+          <div class="card-header bg-white border-bottom">
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center gap-2">
+                <span class="bg-success-subtle text-success rounded p-1 lh-1">
+                  <i class="bi bi-filetype-csv fs-5"></i>
+                </span>
+                <h6 class="mb-0 fw-semibold">CSV Format Guide</h6>
+              </div>
+              {# Download template button #}
+              <a class="btn btn-sm btn-outline-success"
+                 id="downloadTemplate"
+                 download="timetable_template.csv">
+                <i class="bi bi-download me-1"></i>Template
+              </a>
+            </div>
+          </div>
+
+          <div class="card-body">
+
+            {# Column reference table #}
+            <p class="small text-muted mb-2">
+              Required header row columns:
+            </p>
+            <div class="table-responsive mb-3">
+              <table class="table table-sm table-bordered small align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Column</th>
+                    <th>Required?</th>
+                    <th>Accepted values / notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>day_of_week</code></td>
+                    <td>
+                      <span class="badge bg-danger">Required</span>
+                    </td>
+                    <td>Monday · Tuesday · Wednesday · Thursday · Friday · Saturday</td>
+                  </tr>
+                  <tr>
+                    <td><code>start_time</code></td>
+                    <td>
+                      <span class="badge bg-danger">Required</span>
+                    </td>
+                    <td><code>HH:MM</code> or <code>HH:MM:SS</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>end_time</code></td>
+                    <td>
+                      <span class="badge bg-danger">Required</span>
+                    </td>
+                    <td><code>HH:MM</code> or <code>HH:MM:SS</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>subject_code</code></td>
+                    <td>
+                      <span class="badge bg-warning text-dark">Recommended</span>
+                    </td>
+                    <td>
+                      Must match <em>subjects.code</em> in DB.
+                      Leave blank for breaks.<br>
+                      <span class="text-warning">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        If unresolved, a placeholder is inserted
+                        (flagged for review).
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><code>faculty_code</code></td>
+                    <td>
+                      <span class="badge bg-secondary">Optional</span>
+                    </td>
+                    <td>
+                      Faculty code <strong>or</strong> full name.
+                      Partial matching attempted.
+                      <code>TBA</code> / <code>-</code> → NULL (no warning).
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><code>room</code></td>
+                    <td>
+                      <span class="badge bg-secondary">Optional</span>
+                    </td>
+                    <td>Free text, e.g. <code>Lab-CR-201</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>slot_type</code></td>
+                    <td>
+                      <span class="badge bg-secondary">Optional</span>
+                    </td>
+                    <td>
+                      <code>Theory</code> · <code>Lab</code> ·
+                      <code>Lab-Merged</code> · <code>Interval</code> ·
+                      <code>Lunch</code>
+                      (default: <code>Theory</code>)
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {# Example CSV block #}
+            <p class="small text-muted mb-1 fw-semibold">Example:</p>
+            <div class="position-relative">
+              <pre class="small bg-light p-3 rounded border mb-0"
+                   style="overflow-x:auto;"
+                   id="csvExample">day_of_week,start_time,end_time,subject_code,faculty_code,room,slot_type
+Monday,08:30,09:25,BCS401,FC001,Lab-CR-201,Theory
+Monday,09:25,10:20,BCS405A,FC002,Lab-CR-201,Theory
+Monday,10:20,10:40,,,,Interval
+Monday,10:40,11:35,BCS403,FC003,Lab-CR-201,Theory
+Monday,12:30,13:25,,,,Lunch
+Tuesday,10:40,12:30,BCSL404,FC009,Lab-CR-201,Lab</pre>
+              <button type="button"
+                      class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0 m-2"
+                      id="copyBtn"
+                      title="Copy to clipboard">
+                <i class="bi bi-clipboard"></i>
+              </button>
+            </div>
+
+          </div>{# /card-body #}
+        </div>{# /CSV card #}
+
+
+        {# ── PDF tips card (only when pdfplumber installed) ──────────── #}
+        {% if pdf_support %}
+        <div class="card shadow-sm">
+          <div class="card-header bg-white border-bottom">
+            <div class="d-flex align-items-center gap-2">
+              <span class="bg-danger-subtle text-danger rounded p-1 lh-1">
+                <i class="bi bi-filetype-pdf fs-5"></i>
+              </span>
+              <h6 class="mb-0 fw-semibold">PDF Upload Tips</h6>
+            </div>
+          </div>
+          <div class="card-body small">
+            <ul class="mb-0 ps-3 text-muted">
+              <li class="mb-1">
+                <strong>Best results</strong> — PDFs with
+                <strong>bordered tables</strong>
+                (exported from Excel / Word / Google Sheets).
+              </li>
+              <li class="mb-1">
+                Three extraction strategies are tried automatically:
+                structured tables → heuristic grid → raw text lines.
+              </li>
+              <li class="mb-1">
+                <strong>Scanned / image PDFs are not supported</strong>
+                (no OCR). Use CSV for those sources.
+              </li>
+              <li>
+                After upload, check for any
+                <span class="badge bg-warning text-dark">
+                  <i class="bi bi-exclamation-triangle me-1"></i>Needs Review
+                </span>
+                slots — subject or faculty may need manual correction.
+              </li>
+            </ul>
+          </div>
+        </div>
+        {% endif %}
+
+
+        {# ── Placeholder behaviour card ──────────────────────────────── #}
+        <div class="card shadow-sm border-warning">
+          <div class="card-header border-warning"
+               style="background:#fff9e6;">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-lightbulb-fill text-warning fs-5"></i>
+              <h6 class="mb-0 fw-semibold">
+                How Unresolved Rows Are Handled
+              </h6>
+            </div>
+          </div>
+          <div class="card-body small">
+
+            {# Step-by-step resolution flow #}
+            <div class="d-flex flex-column gap-2">
+
+              <div class="d-flex gap-3 align-items-start">
+                <span class="badge bg-success rounded-pill mt-1 flex-shrink-0">
+                  1
+                </span>
+                <div>
+                  <strong>Exact match</strong> — subject code or faculty code
+                  matched directly against the database.
+                </div>
+              </div>
+
+              <div class="d-flex gap-3 align-items-start">
+                <span class="badge bg-primary rounded-pill mt-1 flex-shrink-0">
+                  2
+                </span>
+                <div>
+                  <strong>Partial / name match</strong> — if no exact code
+                  match, the system tries matching by full name or substring.
+                  A warning is shown.
+                </div>
+              </div>
+
+              <div class="d-flex gap-3 align-items-start">
+                <span class="badge bg-warning text-dark rounded-pill mt-1
+                             flex-shrink-0">
+                  3
+                </span>
+                <div>
+                  <strong>Placeholder inserted</strong> — if still unresolved,
+                  the slot is created with an
+                  <code>UNKNOWN</code> subject / <code>NULL</code> faculty and
+                  flagged
+                  <span class="badge bg-warning text-dark">
+                    <i class="bi bi-exclamation-triangle me-1"></i>Needs Review
+                  </span>.
+                  The timetable <strong>renders immediately</strong> — no
+                  broken schedule.
+                </div>
+              </div>
+
+              <div class="d-flex gap-3 align-items-start">
+                <span class="badge bg-secondary rounded-pill mt-1
+                             flex-shrink-0">
+                  4
+                </span>
+                <div>
+                  Admin corrects the highlighted slot on the timetable page,
+                  then clicks
+                  <span class="badge bg-success">
+                    <i class="bi bi-check-circle me-1"></i>Mark Reviewed
+                  </span>
+                  to clear the flag.
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>{# /placeholder card #}
+
+      </div>{# /right col #}
+    </div>{# /row #}
+  </div>{# /col-xl #}
+</div>{# /row #}
+{% endblock %}
+
+
+{% block extra_js %}
+{{ super() }}
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   Upload page JS
+   - Drag-and-drop file zone
+   - File type icon + size preview
+   - Submit loading state
+   - Copy CSV example to clipboard
+   - Build & auto-download CSV template
+══════════════════════════════════════════════════════════════════════════ */
+
+(function () {
+  "use strict";
+
+  // ── Elements ─────────────────────────────────────────────────────────────
+  const dropZone    = document.getElementById("dropZone");
+  const fileInput   = document.getElementById("fileInput");
+  const dropDefault = document.getElementById("dropDefault");
+  const dropSelected= document.getElementById("dropSelected");
+  const fileIcon    = document.getElementById("fileIcon");
+  const fileName    = document.getElementById("fileName");
+  const fileSize    = document.getElementById("fileSize");
+  const changeBtn   = document.getElementById("changeFile");
+  const submitBtn   = document.getElementById("submitBtn");
+  const uploadForm  = document.getElementById("uploadForm");
+  const copyBtn     = document.getElementById("copyBtn");
+  const dlTemplate  = document.getElementById("downloadTemplate");
+
+
+  // ── Drag-over styling ─────────────────────────────────────────────────────
+  dropZone.addEventListener("dragover", e => {
+    e.preventDefault();
+    dropZone.style.borderColor = "#0d6efd";
+    dropZone.style.background  = "#f0f4ff";
+  });
+
+  dropZone.addEventListener("dragleave", () => {
+    dropZone.style.borderColor = "#adb5bd";
+    dropZone.style.background  = "";
+  });
+
+  dropZone.addEventListener("drop", e => {
+    e.preventDefault();
+    dropZone.style.borderColor = "#adb5bd";
+    dropZone.style.background  = "";
+
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      // Assign dropped file to the hidden input via DataTransfer
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      fileInput.files = dt.files;
+      showFilePreview(file);
+    }
+  });
+
+
+  // ── File input change ─────────────────────────────────────────────────────
+  fileInput.addEventListener("change", () => {
+    const file = fileInput.files[0];
+    if (file) showFilePreview(file);
+  });
+
+
+  // ── "Change file" button — re-trigger the file picker ────────────────────
+  changeBtn.addEventListener("click", e => {
+    e.stopPropagation();  // don't bubble to dropZone
+    fileInput.value = "";
+    fileInput.click();
+    dropSelected.classList.add("d-none");
+    dropDefault.classList.remove("d-none");
+  });
+
+
+  // ── Show preview after a file is chosen ───────────────────────────────────
+  function showFilePreview(file) {
+    const isPdf = file.name.toLowerCase().endsWith(".pdf");
+    const isCsv = file.name.toLowerCase().endsWith(".csv");
+
+    // Icon
+    fileIcon.className = "bi display-6 mb-2 d-block";
+    if (isPdf) {
+      fileIcon.classList.add("bi-filetype-pdf", "text-danger");
+    } else if (isCsv) {
+      fileIcon.classList.add("bi-filetype-csv", "text-success");
+    } else {
+      fileIcon.classList.add("bi-file-earmark", "text-secondary");
+    }
+
+    // Name & size
+    fileName.textContent = file.name;
+    fileSize.textContent = formatBytes(file.size);
+
+    // Swap panels
+    dropDefault.classList.add("d-none");
+    dropSelected.classList.remove("d-none");
+
+    // Border colour feedback
+    if (isCsv || isPdf) {
+      dropZone.style.borderColor = "#198754";
+      dropZone.style.background  = "#f0fdf4";
+    } else {
+      dropZone.style.borderColor = "#dc3545";
+      dropZone.style.background  = "#fff5f5";
+    }
+  }
+
+  function formatBytes(bytes) {
+    if (bytes < 1024)       return bytes + " B";
+    if (bytes < 1048576)    return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / 1048576).toFixed(2) + " MB";
+  }
+
+
+  // ── Submit — loading state + basic validation ─────────────────────────────
+  uploadForm.addEventListener("submit", e => {
+    // HTML5 validation
+    if (!uploadForm.checkValidity()) {
+      e.preventDefault();
+      uploadForm.classList.add("was-validated");
+      return;
+    }
+
+    // Check file was actually chosen
+    if (!fileInput.files.length) {
+      e.preventDefault();
+      fileInput.closest(".mb-3").querySelector(".form-text") ||
+        fileInput.insertAdjacentHTML(
+          "afterend",
+          '<div class="text-danger small mt-1">Please select a file.</div>'
+        );
+      return;
+    }
+
+    // Disable button & show spinner
+    submitBtn.disabled = true;
+    submitBtn.innerHTML =
+      '<span class="spinner-border spinner-border-sm me-2"' +
+      ' role="status" aria-hidden="true"></span>Processing…';
+  });
+
+
+  // ── Copy CSV example ──────────────────────────────────────────────────────
+  if (copyBtn) {
+    copyBtn.addEventListener("click", () => {
+      const text = document.getElementById("csvExample").textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        copyBtn.innerHTML = '<i class="bi bi-clipboard-check text-success"></i>';
+        setTimeout(() => {
+          copyBtn.innerHTML = '<i class="bi bi-clipboard"></i>';
+        }, 2000);
+      });
+    });
+  }
+
+
+  // ── Build downloadable CSV template ──────────────────────────────────────
+  if (dlTemplate) {
+    const templateRows = [
+      "day_of_week,start_time,end_time,subject_code,faculty_code,room,slot_type",
+      "Monday,08:30,09:25,BCS401,FC001,Lab-CR-201,Theory",
+      "Monday,09:25,10:20,BCS405A,FC002,Lab-CR-201,Theory",
+      "Monday,10:20,10:40,,,,Interval",
+      "Monday,10:40,11:35,BCS403,FC003,Lab-CR-201,Theory",
+      "Monday,12:30,13:25,,,,Lunch",
+      "Tuesday,10:40,12:30,BCSL404,FC009,Lab-CR-201,Lab",
+    ].join("\n");
+
+    const blob = new Blob([templateRows], { type: "text/csv" });
+    dlTemplate.href = URL.createObjectURL(blob);
+  }
+
+  const sectionSelect = document.querySelector("#sectionSelect");
+
+  if (sectionSelect) {
+      new TomSelect(sectionSelect, {
+          create: false,
+          placeholder: "Type department, semester, section or batch...",
+          maxOptions: 1000,
+          allowEmptyOption: true,
+          searchField: ["text"],   // search entire option text
+          score: function(search) {
+              const terms = search.toLowerCase().split(" ");
+              return function(item) {
+                  const text = item.text.toLowerCase();
+
+                  // All words must exist somewhere
+                  for (let i = 0; i < terms.length; i++) {
+                      if (!text.includes(terms[i])) {
+                          return 0;
+                      }
+                  }
+                  return 1;
+              };
+          },
+          render: {
+              option: function(data, escape) {
+                  return `
+                      <div class="d-flex justify-content-between">
+                          <span>${escape(data.text)}</span>
+                      </div>
+                  `;
+              }
+          }
+      });
+  }
+
+
+})();
+</script>
+{% endblock %}

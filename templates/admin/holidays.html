@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Holiday Calendar{% endblock %}
+{% block page_title %}Holiday Calendar{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h6 class="mb-0"><i class="bi bi-calendar-x"></i> Holidays ({{ holidays|length }})</h6>
+            </div>
+            <div class="card-body p-0">
+                {% if holidays %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle small">
+                        <thead class="table-light">
+                            <tr><th>Date</th><th>Reason</th><th>Scope</th><th>Dept/Section</th><th>Created By</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for h in holidays %}
+                            <tr>
+                                <td class="fw-semibold">{{ h.holiday_date }}</td>
+                                <td>{{ h.reason or '—' }}</td>
+                                <td><span class="badge bg-{{ 'primary' if h.scope == 'college' else 'info' }}">{{ h.scope }}</span></td>
+                                <td>{{ h.dept_code or '' }} {{ h.section_label or '' }}</td>
+                                <td><small>{{ h.created_by_name or '—' }}</small></td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('timetable.delete_holiday', holiday_id=h.id) }}"
+                                          class="d-inline" onsubmit="return confirm('Remove this holiday?')">
+                                        <button class="btn btn-sm btn-outline-danger py-0"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted">No holidays configured.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white"><h6 class="mb-0"><i class="bi bi-plus-circle"></i> Add Holiday</h6></div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('timetable.add_holiday') }}">
+                    <div class="mb-3">
+                        <label class="form-label">Date *</label>
+                        <input type="date" class="form-control" name="holiday_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Reason</label>
+                        <input type="text" class="form-control" name="reason" placeholder="e.g. Republic Day">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Scope</label>
+                        <select class="form-select" name="scope" id="scopeSelect" onchange="toggleScope()">
+                            <option value="college">College-wide</option>
+                            <option value="department">Department</option>
+                            <option value="section">Section</option>
+                        </select>
+                    </div>
+                    <div class="mb-3 d-none" id="deptScope">
+                        <label class="form-label">Department</label>
+                        <select class="form-select" name="department_id">
+                            <option value="">Select</option>
+                            {% for d in departments %}<option value="{{ d.id }}">{{ d.code }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3 d-none" id="secScope">
+                        <label class="form-label">Section</label>
+                        <select class="form-select" name="section_id">
+                            <option value="">Select</option>
+                            {% for s in sections %}<option value="{{ s.id }}">{{ s.dept_code }}-{{ s.section_label }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus"></i> Add Holiday</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+function toggleScope() {
+    const scope = document.getElementById('scopeSelect').value;
+    document.getElementById('deptScope').classList.toggle('d-none', scope !== 'department');
+    document.getElementById('secScope').classList.toggle('d-none', scope !== 'section');
+}
+</script>
+{% endblock %}

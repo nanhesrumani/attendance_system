@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}
+
+Edit Academic Cycle
+
+{% endblock %}
+
+{% block page_title %}
+
+Edit Academic Cycle
+
+{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+<div class="col-md-6">
+
+<div class="card shadow-sm">
+
+<div class="card-header">
+
+<h5>
+
+Edit Academic Cycle
+
+</h5>
+
+</div>
+
+<div class="card-body">
+
+<form method="POST">
+
+<div class="mb-3">
+
+<label>
+
+Name
+
+</label>
+
+<input
+
+class="form-control"
+
+name="name"
+
+value="{{ period.name }}"
+
+required>
+
+</div>
+
+<div class="mb-3">
+
+<label>
+
+Teaching Start
+
+</label>
+
+<input
+
+type="date"
+
+class="form-control"
+
+name="start_date"
+
+value="{{ period.start_date }}"
+
+required>
+
+</div>
+
+<div class="mb-3">
+
+<label>
+
+Teaching End
+
+</label>
+
+<input
+
+type="date"
+
+class="form-control"
+
+name="end_date"
+
+value="{{ period.end_date }}"
+
+required>
+
+</div>
+
+<div class="mb-3">
+
+<label>
+
+Academic Level
+
+</label>
+
+<input
+
+class="form-control"
+
+value="Not Editable"
+
+disabled>
+
+</div>
+
+<div class="mb-3">
+
+<label>
+
+Cycle
+
+</label>
+
+<input
+
+class="form-control"
+
+value="{{ 'Odd' if period.sem_number%2==1 else 'Even' }}"
+
+disabled>
+
+</div>
+
+<div class="d-flex justify-content-between">
+
+<a
+
+href="{{ url_for('academic.periods') }}"
+
+class="btn btn-secondary">
+
+Cancel
+
+</a>
+
+<button
+
+class="btn btn-success">
+
+Save Changes
+
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

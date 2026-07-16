@@ -1,0 +1,589 @@
+{% extends "base.html" %}
+{% block title %}Students{% endblock %}
+{% block page_title %}Student Management{% endblock %}
+
+{% block content %}
+
+<!-- ========================================= -->
+<!-- GLOBAL FILTER BAR -->
+<!-- ========================================= -->
+
+<div class="card shadow-sm mb-3">
+
+    <div class="card-body py-2">
+
+        <form method="GET" class="row g-2 align-items-end">
+
+            <div class="col-md-4">
+
+                <input
+                    type="text"
+                    class="form-control form-control-sm"
+                    name="search"
+                    placeholder="Search USN, name, email..."
+                    value="{{ filters.search }}">
+
+            </div>
+
+            <div class="col-md-3">
+
+                <select
+                    class="form-select form-select-sm"
+                    name="enrollment_status">
+
+                    <option value="">All Status</option>
+
+                    {% for st in [
+                        'pending_approval',
+                        'approved_face_pending',
+                        'enrolled_single_photo',
+                        'fully_enrolled',
+                        'reenrollment_needed'
+                    ] %}
+
+                    <option
+                        value="{{ st }}"
+                        {% if filters.enrollment_status == st %}
+                        selected
+                        {% endif %}>
+
+                        {{ st|replace('_',' ')|title }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <button
+                    type="button"
+                    class="btn btn-success btn-sm w-100"
+                    data-bs-toggle="modal"
+                    data-bs-target="#addStudentModal">
+
+                    <i class="bi bi-plus"></i>
+                    Add Student
+
+                </button>
+
+            </div>
+
+            <div class="col-md-2">
+
+                <button
+                    type="submit"
+                    class="btn btn-primary btn-sm w-100">
+
+                    <i class="bi bi-search"></i>
+                    Filter
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- ========================================= -->
+<!-- QUICK STATS -->
+<!-- ========================================= -->
+
+<div class="row mb-3">
+
+    <div class="col-md-4">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body">
+
+                <small class="text-muted">Total Students</small>
+
+                <h4 class="fw-bold mb-0">
+                    {{ total_students }}
+                </h4>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-4">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body">
+
+                <small class="text-muted">Enrolled</small>
+
+                <h4 class="fw-bold text-success mb-0">
+                    {{ enrolled_students }}
+                </h4>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-4">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body">
+
+                <small class="text-muted">Pending</small>
+
+                <h4 class="fw-bold text-warning mb-0">
+                    {{ pending_students }}
+                </h4>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ========================================= -->
+<!-- DEPARTMENTS -->
+<!-- ========================================= -->
+
+<div class="card shadow-sm mb-3">
+
+    <div class="card-header bg-white">
+
+        <h5 class="mb-0 fw-bold">
+            Departments
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row g-3">
+
+            {% for dept in department_overview %}
+
+            <div class="col-md-3">
+
+                <a
+                    href="{{ url_for(
+                        'students_mgmt.list_students'
+                    ) }}?department_id={{ dept.id }}"
+                    class="text-decoration-none">
+
+                    <div class="card border-0 shadow-sm text-center h-100">
+
+                        <div class="card-body">
+
+                            <h6 class="fw-bold">
+                                {{ dept.name }}
+                            </h6>
+
+                            <small class="text-muted">
+                                {{ dept.student_count }} Students
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ========================================= -->
+<!-- SEMESTERS -->
+<!-- ========================================= -->
+
+{% if semester_overview %}
+
+<div class="card shadow-sm mb-3">
+
+    <div class="card-header bg-white">
+
+        <h5 class="mb-0 fw-bold">
+            Semesters
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        {% for sem in semester_overview %}
+
+        <a
+            href="{{ url_for(
+                'students_mgmt.list_students'
+            ) }}?department_id={{ selected_department }}&sem_number={{ sem.sem_number }}"
+            class="btn btn-outline-primary rounded-pill me-2 mb-2">
+
+            Sem {{ sem.sem_number }}
+
+            <span class="badge bg-primary ms-1">
+                {{ sem.student_count }}
+            </span>
+
+        </a>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endif %}
+
+<!-- ========================================= -->
+<!-- SECTIONS -->
+<!-- ========================================= -->
+
+{% if section_overview %}
+
+<div class="card shadow-sm mb-3">
+
+    <div class="card-header bg-white">
+
+        <h5 class="mb-0 fw-bold">
+            Sections
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row g-3">
+
+            {% for sec in section_overview %}
+
+            <div class="col-md-3">
+
+                <a
+                    href="{{ url_for(
+                        'students_mgmt.list_students'
+                    ) }}?department_id={{ selected_department }}&sem_number={{ selected_semester }}&section_id={{ sec.id }}"
+                    class="text-decoration-none">
+
+                    <div class="card border-0 shadow-sm text-center h-100">
+
+                        <div class="card-body">
+
+                            <h6 class="fw-bold">
+
+                                {{ sec.dept_code }}-{{ sec.sem_number }}{{ sec.section_label }}
+
+                            </h6>
+
+                            <small class="text-muted">
+
+                                {{ sec.student_count }} Students
+
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+<!-- ========================================= -->
+<!-- STUDENTS -->
+<!-- ========================================= -->
+
+{% if student_overview %}
+
+<div class="card shadow-sm mb-3">
+
+    <div class="card-header bg-white d-flex justify-content-between">
+
+        <h5 class="mb-0 fw-bold">
+
+            Students
+
+        </h5>
+
+        <span class="badge bg-primary">
+
+            {{ student_overview|length }}
+
+        </span>
+
+    </div>
+
+    <div class="card-body p-0">
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead class="table-light">
+
+                    <tr>
+
+                        <th>USN</th>
+
+                        <th>Name</th>
+
+                        <th>Email</th>
+
+                        <th>Status</th>
+
+                        <th>Actions</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for st in student_overview %}
+
+                    <tr>
+
+                        <td>
+
+                            <code>
+
+                                {{ st.usn }}
+
+                            </code>
+
+                        </td>
+
+                        <td>
+
+                            {{ st.full_name }}
+
+                        </td>
+
+                        <td>
+
+                            {{ st.email }}
+
+                        </td>
+
+                        <td>
+
+                            {% if st.enrollment_status == 'fully_enrolled' %}
+
+                                <span class="badge bg-success">
+
+                                    Enrolled
+
+                                </span>
+
+                            {% elif st.enrollment_status == 'approved_face_pending' %}
+
+                                <span class="badge bg-warning">
+
+                                    Face Pending
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-secondary">
+
+                                    {{ st.enrollment_status|replace('_',' ') }}
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            
+                             <a   href="{{ url_for(
+                                    'students_mgmt.list_students'
+                                ) }}?department_id={{ selected_department }}&sem_number={{ selected_semester }}&section_id={{ selected_section }}&student_id={{ st.id }}"
+                                class="btn btn-sm btn-outline-primary" title="View">
+                                <i class="bi bi-eye"></i>
+                            </a>
+
+                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#editStudentModal{{ st.id }}" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+
+                            <form method="POST" class="d-inline"
+                                  action="{{ url_for('students_mgmt.delete_student', student_id=st.id) }}"
+                                  onsubmit="return confirm('Delete this student permanently? This cannot be undone.');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+
+                            <!-- Edit Modal -->
+                            <div class="modal fade" id="editStudentModal{{ st.id }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <form method="POST" action="{{ url_for('students_mgmt.edit_student', student_id=st.id) }}">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h6 class="modal-title">Edit Student</h6>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="mb-2">
+                                                    <label class="form-label">Full Name</label>
+                                                    <input type="text" name="full_name" class="form-control" value="{{ st.full_name }}" required>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label class="form-label">Email</label>
+                                                    <input type="email" name="email" class="form-control" value="{{ st.email }}" required>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label class="form-label">USN</label>
+                                                    <input type="text" name="usn" class="form-control" value="{{ st.usn }}" required>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label class="form-label">Current Semester</label>
+                                                    <input type="number" name="current_sem" class="form-control" min="1" max="8" value="{{ st.current_sem }}">
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+<!-- ========================================= -->
+<!-- SELECTED STUDENT DETAIL -->
+<!-- ========================================= -->
+
+{% if selected_student_data %}
+
+<div class="card shadow-sm mb-3 border-primary">
+
+    <div class="card-header bg-white d-flex justify-content-between">
+
+        <div>
+
+            <h5 class="mb-0 fw-bold">
+
+                {{ selected_student_data.full_name }}
+
+            </h5>
+
+            <small class="text-muted">
+
+                {{ selected_student_data.usn }}
+
+            </small>
+
+        </div>
+
+        <div>
+
+            <span class="badge bg-success">
+
+                {{ selected_student_data.enrollment_status }}
+
+            </span>
+
+        </div>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-md-4">
+
+                <small class="text-muted d-block">
+                    Email
+                </small>
+
+                <strong>
+                    {{ selected_student_data.email }}
+                </strong>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <small class="text-muted d-block">
+                    Phone
+                </small>
+
+                <strong>
+                    {{ selected_student_data.phone or '—' }}
+                </strong>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <small class="text-muted d-block">
+                    Department
+                </small>
+
+                <strong>
+                    {{ selected_student_data.dept_name }}
+                </strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+<!-- KEEP YOUR EXISTING ADD STUDENT MODAL BELOW -->
+
+{% endblock %}

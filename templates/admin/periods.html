@@ -1,0 +1,497 @@
+
+
+{% extends "base.html" %}
+
+{% block title %}Academic Cycles{% endblock %}
+
+{% block content %}
+
+<div class="accordion" id="academicLevels">
+
+{% for level in levels.values() %}
+
+<div class="accordion-item mb-3 shadow-sm">
+
+    <h2 class="accordion-header">
+
+        <button class="accordion-button {% if not loop.first %}collapsed{% endif %}"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#level{{ level.level_no }}">
+
+            <strong>{{ level.level_name }}</strong>
+
+        </button>
+
+    </h2>
+
+    <div id="level{{ level.level_no }}"
+         class="accordion-collapse collapse {% if loop.first %}show{% endif %}">
+
+        <div class="accordion-body">
+
+            <div class="row">
+
+                <!-- ODD -->
+
+                <div class="col-md-6">
+
+                    <div class="card border-primary">
+
+                        <div class="card-header bg-primary text-white">
+
+                            Odd Cycle
+
+                        </div>
+
+                        <div class="card-body">
+
+                            {% if level.odd %}
+
+                            <p><strong>Name :</strong> {{ level.odd.name }}</p>
+
+                            <p>
+
+                                <strong>Semester :</strong>
+
+                                {{ level.odd.semester }}
+
+                            </p>
+
+                            <p>
+
+                                <strong>Teaching :</strong>
+
+                                {{ level.odd.start_date }}
+
+                                →
+
+                                {{ level.odd.end_date }}
+
+                            </p>
+
+                            {% if level.odd.is_archived %}
+
+                            <span class="badge bg-dark">
+                                Archived
+                            </span>
+
+                            {% else %}
+
+                            <span class="badge bg-{{ level.odd.badge }}">
+                                {{ level.odd.status }}
+                            </span>
+
+                            {% endif %}
+
+                            <hr>
+
+                           {% if level.odd.is_archived %}
+
+                            <hr>
+
+                            <form method="POST"
+                                action="{{ url_for('academic.restore_period', period_id=level.odd.id) }}"
+                                class="d-inline"
+                                onsubmit="return confirmRestore();">
+
+                                <button class="btn btn-outline-success btn-sm">
+                                    Restore
+                                </button>
+
+                            </form>
+
+                            {% else %}
+
+                            <div class="btn-group">
+
+                                <a href="{{ url_for('academic.edit_period', period_id=level.odd.id) }}"
+                                class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </a>
+
+                                {% if level.odd.is_active %}
+
+                                <form method="POST"
+                                    action="{{ url_for('academic.deactivate_period', period_id=level.odd.id) }}"
+                                    class="d-inline"
+                                    onsubmit="return confirmDeactivate('{{ level.level_name }}', 'Odd');">
+
+                                    <button class="btn btn-outline-danger btn-sm">
+                                        Deactivate
+                                    </button>
+
+                                </form>
+
+                                {% else %}
+
+                                <form method="POST"
+                                    action="{{ url_for('academic.activate_period', period_id=level.odd.id) }}"
+                                    class="d-inline"
+                                    onsubmit="return confirmActivate('{{ level.level_name }}', 'Odd');">
+
+                                    <button class="btn btn-outline-success btn-sm">
+                                        Activate
+                                    </button>
+
+                                </form>
+
+                                {% endif %}
+
+                                <form method="POST"
+                                    action="{{ url_for('academic.archive_period', period_id=level.odd.id) }}"
+                                    class="d-inline"
+                                    onsubmit="return confirmArchive();">
+
+                                    <button class="btn btn-outline-dark btn-sm">
+                                        Archive
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                            {% endif %}
+
+                            {% else %}
+
+                            <div class="text-muted">
+
+                                No Odd Cycle Created
+
+                            </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- EVEN -->
+
+                <div class="col-md-6">
+
+                    <div class="card border-success">
+
+                        <div class="card-header bg-success text-white">
+
+                            Even Cycle
+
+                        </div>
+
+                        <div class="card-body">
+
+                            {% if level.even %}
+
+                            <p><strong>Name :</strong> {{ level.even.name }}</p>
+
+                            <p>
+
+                                <strong>Semester :</strong>
+
+                                {{ level.even.semester }}
+
+                            </p>
+
+                            <p>
+
+                                <strong>Teaching :</strong>
+
+                                {{ level.even.start_date }}
+
+                                →
+
+                                {{ level.even.end_date }}
+
+                            </p>
+                            
+                            {% if level.even.is_archived %}
+
+                            <span class="badge bg-dark">
+                                Archived
+                            </span>
+
+                            <hr>
+
+                            <form method="POST"
+                                action="{{ url_for('academic.restore_period',
+                                                    period_id=level.even.id) }}"
+                                class="d-inline"
+                                onsubmit="return confirmRestore();">
+
+                                <button class="btn btn-outline-success btn-sm">
+                                    Restore
+                                </button>
+
+                            </form>
+
+                            {% else %}
+
+                            <span class="badge bg-{{ level.even.badge }}">
+                                {{ level.even.status }}
+                            </span>
+
+                            <hr>
+
+                            <div class="btn-group">
+
+                                <a href="{{ url_for('academic.edit_period', period_id=level.even.id) }}"
+                                class="btn btn-outline-primary btn-sm">
+                                    Edit
+                                </a>
+
+                                {% if level.even.is_active %}
+
+                                <form method="POST"
+                                    action="{{ url_for('academic.deactivate_period', period_id=level.even.id) }}"
+                                    class="d-inline"
+                                    onsubmit="return confirmDeactivate('{{ level.level_name }}','Even');">
+
+                                    <button class="btn btn-outline-danger btn-sm">
+                                        Deactivate
+                                    </button>
+
+                                </form>
+
+                                {% else %}
+
+                                <form method="POST"
+                                    action="{{ url_for('academic.activate_period', period_id=level.even.id) }}"
+                                    class="d-inline"
+                                    onsubmit="return confirmActivate('{{ level.level_name }}','Even');">
+
+                                    <button class="btn btn-outline-success btn-sm">
+                                        Activate
+                                    </button>
+
+                                </form>
+
+                                {% endif %}
+
+                                <form method="POST"
+                                    action="{{ url_for('academic.archive_period', period_id=level.even.id) }}"
+                                    class="d-inline"
+                                    onsubmit="return confirmArchive();">
+
+                                    <button class="btn btn-outline-dark btn-sm">
+                                        Archive
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                            {% endif %}
+
+                            {% else %}
+
+                            <div class="text-muted">
+
+                                No Even Cycle Created
+
+                            </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+<hr>
+
+<div class="card shadow-sm mt-4">
+
+    <div class="card-header">
+
+        Create Academic Cycle
+
+    </div>
+
+    <div class="card-body">
+
+        <form method="POST" action="{{ url_for('academic.add_period') }}">
+
+            <div class="row">
+
+                <div class="col-md-3">
+
+                    <label>Academic Level</label>
+
+                    <select class="form-select" name="level" required>
+
+                        <option value="1">First Year</option>
+
+                        <option value="2">Second Year</option>
+
+                        <option value="3">Third Year</option>
+
+                        <option value="4">Fourth Year</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <label>Cycle</label>
+
+                    <select class="form-select" name="cycle_type" required>
+
+                        <option value="Odd">Odd</option>
+
+                        <option value="Even">Even</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <label>Name</label>
+
+                    <input class="form-control"
+                           name="name"
+                           placeholder="2026-27 Odd Cycle"
+                           required>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <label>&nbsp;</label>
+
+                    <button class="btn btn-primary w-100">
+
+                        Create
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="row mt-3">
+
+                <div class="col">
+
+                    <label>Teaching Start</label>
+
+                    <input type="date"
+                           class="form-control"
+                           name="start_date"
+                           required>
+
+                </div>
+
+                <div class="col">
+
+                    <label>Teaching End</label>
+
+                    <input type="date"
+                           class="form-control"
+                           name="end_date"
+                           required>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+
+function confirmActivate(level, cycle) {
+
+    return confirm(
+        "Activate " + cycle + " Cycle for " + level + "?\n\n" +
+        "If another cycle is currently active, it will be automatically deactivated.\n\n" +
+        "Do you want to continue?"
+    );
+
+}
+
+function confirmDeactivate(level, cycle) {
+
+    return confirm(
+        "Deactivate " + cycle + " Cycle for " + level + "?\n\n" +
+        "No Academic Cycle will remain active for this Academic Level.\n\n" +
+        "Attendance, Sessions and Timetable cannot be started until another cycle is activated.\n\n" +
+        "Do you want to continue?"
+    );
+
+}
+
+</script>
+
+<script>
+
+function confirmArchive(){
+
+return confirm(
+
+"Archive this Academic Cycle?\n\n"+
+
+"This Academic Cycle will become READ ONLY.\n\n"+
+
+"You can restore it later if required.\n\n" +
+
+"Continue?"
+
+);
+
+}
+
+function confirmArchiveDeactivate(){
+
+return confirm(
+
+"Deactivate this Academic Cycle?\n\n"+
+
+"No Academic Cycle will remain active for this Academic Level.\n\n"+
+
+"Continue?"
+
+);
+
+}
+
+function confirmRestore(){
+
+    return confirm(
+
+        "Restore this Academic Cycle?\n\n" +
+
+        "The cycle will become editable again.\n\n" +
+
+        "It can be activated later if required.\n\n" +
+
+        "Continue?"
+
+    );
+
+}
+
+</script>
+
+
+{% endblock %}

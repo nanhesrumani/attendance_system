@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block title %}Subject Registration{% endblock %}
+{% block page_title %}Subject Registration{% endblock %}
+
+{% block content %}
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% else %}
+
+<div class="alert alert-info small">
+  <i class="bi bi-info-circle"></i>
+  Registering for {{ period.name }}. Once you register for an elective, it stays fixed
+  for the whole semester — contact your department office to change it after submitting.
+</div>
+
+<!-- Professional Electives -->
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <h6 class="mb-0"><i class="bi bi-diagram-3"></i> Professional Elective</h6>
+    {% if cluster %}
+      <span class="badge bg-dark">Your Cluster: {{ cluster.cluster_name }}</span>
+    {% endif %}
+  </div>
+  <div class="card-body p-0">
+    {% if not cluster %}
+      <div class="text-center text-muted py-4">You're not assigned to a cluster yet.</div>
+    {% elif not professional %}
+      <div class="text-center text-muted py-4">No professional electives offered to your cluster this period.</div>
+    {% else %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr><th>Code</th><th>Subject</th><th>Seats</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for g in professional %}
+          <tr id="row-pe-{{ g.group_id }}">
+            <td><code>{{ g.code }}</code></td>
+            <td>{{ g.name }}</td>
+            <td>
+              <small class="text-muted">
+                {{ g.enrolled }}{% if g.max_capacity %} / {{ g.max_capacity }}{% endif %}
+              </small>
+            </td>
+            <td class="text-end">
+              {% if registered.professional_elective and registered.professional_elective.group_id == g.group_id %}
+                <span class="badge bg-success"><i class="bi bi-check-circle"></i> Registered</span>
+              {% elif registered.professional_elective %}
+                <span class="badge bg-secondary">Locked (registered elsewhere)</span>
+              {% else %}
+                <button class="btn btn-sm btn-primary" onclick="registerGroup({{ g.group_id }}, this, 'row-pe-{{ g.group_id }}')">
+                  Register
+                </button>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Open Elective -->
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-white">
+    <h6 class="mb-0"><i class="bi bi-globe"></i> Open Elective <small class="text-muted">(pick exactly one)</small></h6>
+  </div>
+  <div class="card-body p-0">
+    {% if not open_elective_subjects %}
+      <div class="text-center text-muted py-4">No open electives available this semester.</div>
+    {% else %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr><th>Code</th><th>Subject</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for s in open_elective_subjects %}
+          <tr id="row-oe-{{ s.id }}">
+            <td><code>{{ s.code }}</code></td>
+            <td>{{ s.name }}</td>
+            <td class="text-end">
+              {% if registered.open_elective and registered.open_elective.subject_id == s.id %}
+                <span class="badge bg-success"><i class="bi bi-check-circle"></i> Registered</span>
+              {% elif registered.open_elective %}
+                <span class="badge bg-secondary">Locked (registered elsewhere)</span>
+              {% else %}
+                <button class="btn btn-sm btn-primary" onclick="registerSubject({{ s.id }}, this, 'row-oe-{{ s.id }}')">
+                  Register
+                </button>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- AEC / SEC -->
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-white">
+    <h6 class="mb-0"><i class="bi bi-tools"></i> Ability / Skill Enhancement <small class="text-muted">(pick exactly one)</small></h6>
+  </div>
+  <div class="card-body p-0">
+    {% if not aec_subjects %}
+      <div class="text-center text-muted py-4">No AEC/SEC options available for your department this semester.</div>
+    {% else %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr><th>Code</th><th>Subject</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for s in aec_subjects %}
+          <tr id="row-aec-{{ s.id }}">
+            <td><code>{{ s.code }}</code></td>
+            <td>{{ s.name }}</td>
+            <td class="text-end">
+              {% if registered.ability_enhancement and registered.ability_enhancement.subject_id == s.id %}
+                <span class="badge bg-success"><i class="bi bi-check-circle"></i> Registered</span>
+              {% elif registered.ability_enhancement %}
+                <span class="badge bg-secondary">Locked (registered elsewhere)</span>
+              {% else %}
+                <button class="btn btn-sm btn-primary" onclick="registerSubject({{ s.id }}, this, 'row-aec-{{ s.id }}')">
+                  Register
+                </button>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function registerGroup(groupId, btn, rowId) {
+  submitRegistration({ group_id: groupId }, btn, rowId);
+}
+function registerSubject(subjectId, btn, rowId) {
+  submitRegistration({ subject_id: subjectId }, btn, rowId);
+}
+function submitRegistration(payload, btn, rowId) {
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+  fetch("{{ url_for('student_registration.register') }}", {
+    method: "POST",
+    body: new URLSearchParams(payload)
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        document.querySelector(`#${rowId} td:last-child`).innerHTML =
+          '<span class="badge bg-success"><i class="bi bi-check-circle"></i> Registered</span>';
+        showToast("Registered successfully.", "success");
+        setTimeout(() => location.reload(), 800);
+      } else {
+        showToast(data.message || "Registration failed.", "danger");
+        btn.disabled = false;
+        btn.innerHTML = "Register";
+      }
+    })
+    .catch(() => {
+      showToast("Request failed.", "danger");
+      btn.disabled = false;
+      btn.innerHTML = "Register";
+    });
+}
+</script>
+{% endblock %}

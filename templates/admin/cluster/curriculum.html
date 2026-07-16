@@ -1,0 +1,150 @@
+{% for sem, data in curriculum.items() %}
+
+<div class="card shadow-sm mb-4">
+
+    <div class="card-header bg-primary text-white">
+
+        <h5 class="mb-0">
+
+            Semester {{ sem }}
+
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <!-- Common Subjects -->
+
+        <h6 class="text-success">
+
+            <i class="bi bi-book-fill"></i>
+
+            Common Curriculum
+
+        </h6>
+
+        <div class="row mb-4">
+
+            {% for subject in data.core %}
+
+            <div class="col-md-6 mb-2">
+
+                <div class="border rounded p-2 bg-light">
+
+                    <strong>{{ subject.code }}</strong>
+
+                    <br>
+
+                    {{ subject.name }}
+
+                    <br>
+
+                    <small class="text-muted">
+
+                        {{ subject.subject_type }}
+
+                    </small>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        <hr>
+
+        <!-- Electives -->
+
+        <form
+        method="POST"
+        action="{{ url_for('academic.save_cluster_curriculum',
+                           cluster_id=cluster.id) }}">
+
+        <input
+        type="hidden"
+        name="semester"
+        value="{{ sem }}">
+
+        <h6 class="text-primary">
+
+            <i class="bi bi-mortarboard-fill"></i>
+
+            Cluster Electives
+
+        </h6>
+
+        {% if data.electives %}
+
+            <div class="row">
+
+            {% for subject in data.electives %}
+
+                <div class="col-md-6">
+
+                    <div class="form-check mb-2">
+
+                        <input
+
+                        class="form-check-input"
+
+                        type="checkbox"
+
+                        name="subject_ids"
+
+                        value="{{ subject.id }}"
+
+                        {% if subject.assigned %}
+                        checked
+                        {% endif %}>
+
+                        <label class="form-check-label">
+
+                            <strong>
+
+                                {{ subject.code }}
+
+                            </strong>
+
+                            -
+
+                            {{ subject.name }}
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="alert alert-secondary">
+
+                No electives available.
+
+            </div>
+
+        {% endif %}
+
+        <button
+        class="btn btn-success mt-3">
+
+            <i class="bi bi-save"></i>
+
+            Save Semester {{ sem }}
+
+        </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endfor %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h4>📸 Classroom Photo Recognition — Session #{{ session_id }}</h4>
+  <p class="text-muted">
+    Processed {{ photos_processed }} photo(s), detected {{ total_faces_detected }} face(s) total.
+    Review matched students before marking attendance.
+  </p>
+
+  <form method="POST" action="{{ url_for('session_view.confirm_classroom_photo_attendance', session_id=session_id) }}">
+
+    <div class="card mb-3 border-success">
+      <div class="card-header bg-success text-white">
+        ✅ Recognized Students ({{ matched|length }})
+      </div>
+      <div class="card-body">
+        {% for s in matched %}
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox"
+                 name="student_ids" value="{{ s.student_id }}"
+                 id="s_{{ s.student_id }}" checked>
+          <label class="form-check-label" for="s_{{ s.student_id }}">
+            <strong>{{ s.usn }}</strong> — {{ s.full_name }}
+            <span class="text-muted small">(score {{ '%.2f'|format(s.score) }}, photo {{ s.source_photo + 1 }})</span>
+          </label>
+        </div>
+        {% else %}
+        <p class="text-muted">No students recognized.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% if unrecognized_count %}
+    <div class="card mb-3 border-warning">
+      <div class="card-header bg-warning">
+        ⚠️ Faces Detected But Not Matched ({{ unrecognized_count }})
+      </div>
+      <div class="card-body">
+        <p class="text-muted small mb-0">
+          These students will stay marked absent. Use manual toggle on the session page
+          if you recognize them yourself.
+        </p>
+      </div>
+    </div>
+    {% endif %}
+
+    <button type="submit" class="btn btn-success">
+      ✅ Confirm & Mark Attendance
+    </button>
+    <a href="{{ url_for('session_view.view_session', session_id=session_id) }}" class="btn btn-secondary ms-2">
+      Cancel
+    </a>
+  </form>
+</div>
+{% endblock %}

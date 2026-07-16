@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}My Reports{% endblock %}
+{% block page_title %}My Subject Reports{% endblock %}
+
+{% block content %}
+{% if my_subjects %}
+<div class="row g-3">
+    {% for subj in my_subjects %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <code class="fs-6">{{ subj.subject_code }}</code>
+                        <h6 class="mb-0 mt-1">{{ subj.subject_name }}</h6>
+                    </div>
+                    <span class="badge bg-dark">{{ subj.dept_code }}-{{ subj.section_label }}</span>
+                </div>
+
+                <div class="row text-center my-3">
+                    <div class="col-6">
+                        <h4 class="fw-bold mb-0">{{ subj.total_sessions }}</h4>
+                        <small class="text-muted">Sessions</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="fw-bold mb-0
+                            {{ 'text-danger' if subj.avg_percentage < 75 else 'text-warning' if subj.avg_percentage < 85 else 'text-success' }}">
+                            {{ subj.avg_percentage }}%
+                        </h4>
+                        <small class="text-muted">Avg Attendance</small>
+                    </div>
+                </div>
+
+                <div class="progress mb-3" style="height:8px">
+                    <div class="progress-bar bg-{{ 'danger' if subj.avg_percentage < 75 else 'warning' if subj.avg_percentage < 85 else 'success' }}"
+                         style="width:{{ subj.avg_percentage }}%"></div>
+                </div>
+
+                <a href="{{ url_for('faculty_reports.subject_report', subject_id=subj.subject_id, section_id=subj.section_id) }}"
+                   class="btn btn-sm btn-outline-primary w-100">
+                    <i class="bi bi-bar-chart"></i> View Detailed Report
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-book fs-1"></i>
+    <p class="mt-2">No subjects assigned to you for the active period.</p>
+</div>
+{% endif %}
+{% endblock %}

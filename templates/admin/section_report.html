@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Section Report — {{ section.dept_code }}-{{ section.section_label }}{% endblock %}
+{% block page_title %}Attendance Report — {{ section.dept_code }}-{{ section.section_label }}{% endblock %}
+
+{% block content %}
+<div class="mb-3 d-flex justify-content-between align-items-center">
+    <div>
+        <span class="text-muted">Period: {{ date_from }} to {{ date_to }}</span>
+    </div>
+    <div>
+        <a href="{{ url_for('admin_reports.download_section_excel', section_id=section.id, **{'from': date_from, 'to': date_to}) }}"
+           class="btn btn-sm btn-success"><i class="bi bi-file-earmark-excel"></i> Download Excel</a>
+        <a href="{{ url_for('admin_reports.reports_home') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle small">
+                <thead class="table-light">
+                    <tr><th>#</th><th>USN</th><th>Name</th><th>Total</th><th>Present</th><th>Absent</th><th>%</th></tr>
+                </thead>
+                <tbody>
+                    {% for r in report_data %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><code>{{ r.usn }}</code></td>
+                        <td>{{ r.name }}</td>
+                        <td>{{ r.total }}</td>
+                        <td class="text-success fw-bold">{{ r.present }}</td>
+                        <td class="text-danger">{{ r.absent }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'danger' if r.percentage < 75 else 'warning' if r.percentage < 85 else 'success' }} fs-6">
+                                {{ r.percentage }}%
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

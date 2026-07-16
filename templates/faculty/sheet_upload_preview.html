@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h4>📋 Sheet Upload Preview — Session #{{ session_id }}</h4>
+  <p class="text-muted">Review detected students before marking attendance.</p>
+
+  <form method="POST" action="/faculty/session/{{ session_id }}/confirm-sheet-upload">
+
+    <div class="card mb-3 border-success">
+      <div class="card-header bg-success text-white">
+        ✅ Matched Students ({{ matched|length }})
+      </div>
+      <div class="card-body">
+        {% for s in matched %}
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox"
+                 name="student_ids" value="{{ s.student_id }}"
+                 id="s_{{ s.student_id }}" checked>
+          <label class="form-check-label" for="s_{{ s.student_id }}">
+            <strong>{{ s.usn }}</strong> — {{ s.full_name }}
+          </label>
+        </div>
+        {% else %}
+        <p class="text-muted">No students matched.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% if unmatched %}
+    <div class="card mb-3 border-warning">
+      <div class="card-header bg-warning">
+        ⚠️ Could Not Match ({{ unmatched|length }}) — these will be ignored
+      </div>
+      <ul class="list-group list-group-flush">
+        {% for u in unmatched %}
+        <li class="list-group-item text-muted">{{ u }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <button type="submit" class="btn btn-success">
+      ✅ Confirm & Mark Attendance
+    </button>
+    <a href="/faculty/session/{{ session_id }}" class="btn btn-secondary ms-2">
+      Cancel
+    </a>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+services:
+  web:
+    build: .
+    image: attendance-system:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:5000:5000"   # nginx (on the host) proxies to this
+    volumes:
+      - ./dataset:/app/dataset
+      - ./uploads:/app/uploads
+      - ./credentials.json:/app/credentials.json:ro
+      - ./recognition/anti_spoof_models:/app/recognition/anti_spoof_models:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

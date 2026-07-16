@@ -1,0 +1,544 @@
+{% extends "base.html" %}
+{% block title %}{{ department.code }} Workspace{% endblock %}
+{% block page_title %}{{ department.code }} Department Workspace{% endblock %}
+
+{% block content %}
+{% set tab = active_tab or 'overview' %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-1">{{ department.name }}</h4>
+        <div class="text-muted small">{{ department.code }}</div>
+    </div>
+    <a href="{{ url_for('academic.departments') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i>
+        Departments
+    </a>
+</div>
+
+<ul class="nav nav-tabs mb-3">
+    {% for key, label, icon in [
+        ('overview', 'Overview', 'bi-speedometer2'),
+        ('reports', 'Reports', 'bi-bar-chart-line')
+    ] %}
+    <li class="nav-item">
+        <a class="nav-link {{ 'active' if tab == key }}"
+           href="{{ url_for('academic.department_workspace', dept_id=department.id, tab=key) }}">
+            <i class="bi {{ icon }}"></i>
+            {{ label }}
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-3">
+
+    <a
+    href="{{ url_for('academic.department_workspace',
+    dept_id=department.id,
+    tab='faculty') }}"
+    class="text-decoration-none text-dark">
+
+    <div class="card shadow-sm h-100">
+
+    <div class="card-body text-center">
+
+    <h2>{{ stats.faculty }}</h2>
+
+    <p class="mb-0">Faculty</p>
+
+    </div>
+
+    </div>
+
+    </a>
+
+    </div>
+    <div class="col-md-3">
+
+    <a
+    href="{{ url_for('academic.department_workspace',
+    dept_id=department.id,
+    tab='sections') }}"
+    class="text-decoration-none text-dark">
+
+    <div class="card shadow-sm h-100">
+
+    <div class="card-body text-center">
+
+    <h2>{{ stats.sections }}</h2>
+
+    <p class="mb-0">Sections</p>
+
+    </div>
+
+    </div>
+
+    </a>
+
+    </div>
+    <div class="col-md-3">
+
+    <a
+    href="{{ url_for('academic.department_workspace',
+    dept_id=department.id,
+    tab='subjects') }}"
+    class="text-decoration-none text-dark">
+
+    <div class="card shadow-sm h-100">
+
+    <div class="card-body text-center">
+
+    <h2>{{ stats.subjects }}</h2>
+
+    <p class="mb-0">Subjects</p>
+
+    </div>
+
+    </div>
+
+    </a>
+
+    </div>
+    <div class="col-md-3">
+
+    <a
+    href="{{ url_for('academic.department_workspace',
+    dept_id=department.id,
+    tab='clusters') }}"
+    class="text-decoration-none text-dark">
+
+    <div class="card shadow-sm h-100">
+
+    <div class="card-body text-center">
+
+    <h2>{{ stats.clusters }}</h2>
+
+    <p class="mb-0">Clusters</p>
+
+    </div>
+
+    </div>
+
+    </a>
+
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h6 class="mb-0">Attention Required</h6>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="border rounded p-3">
+                    <small class="text-muted">Faculty without cluster</small>
+                    <div class="fs-4 fw-bold">{{ stats.unassigned_faculty }}</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="border rounded p-3">
+                    <small class="text-muted">Sections without cluster</small>
+                    <div class="fs-4 fw-bold">{{ stats.unassigned_sections }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% if tab == 'faculty' %}
+<div class="card shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">Faculty</h6>
+        <a href="{{ url_for('faculty_mgmt.list_faculty', department=department.id) }}"
+        class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-pencil"></i>
+            Manage Faculty
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Code</th>
+                        <th>Designation</th>
+                        <th>Cluster</th>
+                        <th>Qualification</th>
+                        <th>Experience</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in faculty %}
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">{{ f.full_name }}</div>
+                            <small class="text-muted">{{ f.email }}</small>
+                        </td>
+                        <td><code>{{ f.faculty_code or '-' }}</code></td>
+                        <td>{{ f.designation or '-' }}</td>
+                        <td>{{ f.cluster_name or 'Unassigned' }}</td>
+                        <td>{{ f.qualification or '-' }}</td>
+                        <td>{{ f.experience_years or 0 }} yrs</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">No faculty found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if tab == 'sections' %}
+<div class="card shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">Sections</h6>
+        <a href="{{ url_for('academic.sections', department_id=department.id) }}"
+           class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-pencil"></i>
+            Manage Sections
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Section</th>
+                        <th>Batch</th>
+                        <th>Academic Period</th>
+                        <th>Cluster</th>
+                        <th>Students</th>
+                        <th>Room</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sec in sections %}
+                    <tr>
+                        <td class="fw-semibold">Sem {{ sec.sem_number }} {{ sec.section_label }}</td>
+                        <td>{{ sec.admission_year }}-{{ sec.graduation_year }}</td>
+                        <td>{{ sec.period_name }}</td>
+                        <td>{{ sec.cluster_name or 'Unassigned' }}</td>
+                        <td>{{ sec.student_count }}</td>
+                        <td>{{ sec.room or '-' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">No sections found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if tab == 'subjects' %}
+<div class="card shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">Subjects</h6>
+        <a href="{{ url_for('academic.subjects', department_id=department.id) }}"
+           class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-pencil"></i>
+            Manage Subjects
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Semester</th>
+                    <th>Type</th>
+                    <th>Credits</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in subjects %}
+                <tr>
+                    <td><code>{{ sub.code }}</code></td>
+                    <td>{{ sub.name }}</td>
+                    <td>{{ sub.sem_number or 'General' }}</td>
+                    <td>{{ sub.subject_type }}</td>
+                    <td>{{ sub.credits }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="text-center text-muted py-4">No subjects found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+
+{% if tab == 'clusters' %}
+<div class="row g-3">
+    <div class="col-lg-8">
+<div class="row">
+
+{% for c in clusters %}
+
+<div class="col-lg-4 mb-4">
+
+<div class="card shadow-sm h-100">
+
+<div class="card-header bg-primary text-white">
+
+<h5 class="mb-0">
+
+{{ c.cluster_name }}
+
+</h5>
+
+</div>
+
+<div class="card-body">
+
+<p>
+
+<strong>Head</strong><br>
+
+{{ c.cluster_head or "Not Assigned" }}
+
+</p>
+
+<hr>
+
+<div class="row text-center">
+
+<div class="col-6">
+
+<h4>
+
+{{ c.faculty_count }}
+
+</h4>
+
+<small>Faculty</small>
+
+</div>
+
+<div class="col-6">
+
+<h4>
+
+{{ c.section_count }}
+
+</h4>
+
+<small>Sections</small>
+
+</div>
+
+</div>
+
+<hr>
+
+<div class="row text-center">
+
+<div class="col-6">
+
+<h4>
+
+{{ c.student_count }}
+
+</h4>
+
+<small>Students</small>
+
+</div>
+
+<div class="col-6">
+
+<h4>
+
+{{ c.subject_count }}
+
+</h4>
+
+<small>Subjects</small>
+
+</div>
+
+</div>
+
+{% if c.remarks %}
+
+<hr>
+
+<small class="text-muted">
+
+{{ c.remarks }}
+
+</small>
+
+{% endif %}
+
+</div>
+
+<div class="card-footer bg-white">
+
+<a
+
+class="btn btn-primary w-100"
+
+href="{{ url_for('academic.cluster_workspace',
+cluster_id=c.id) }}">
+
+<i class="bi bi-diagram-3"></i>
+
+Manage
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+<div class="col-lg-4">
+
+<div class="card border-primary">
+
+<div class="card-header">
+
+<h5>
+
+Create Cluster
+
+</h5>
+
+</div>
+
+<div class="card-body">
+
+<form
+method="POST"
+action="{{ url_for('academic.create_cluster',
+dept_id=department.id) }}">
+
+<div class="mb-3">
+
+<label>
+
+Cluster Name
+
+</label>
+
+<input
+type="text"
+name="cluster_name"
+class="form-control"
+required>
+
+</div>
+
+<div class="mb-3">
+
+<label>
+
+Cluster Head
+
+</label>
+
+<select
+name="cluster_head"
+class="form-select">
+
+<option value="">
+Select Faculty
+</option>
+
+{% for f in faculty_options %}
+
+<option value="{{f.id}}">
+{{f.full_name}}
+</option>
+
+{% endfor %}
+
+</select>
+
+</div>
+
+<div class="mb-3">
+
+<label>
+
+Remarks
+
+</label>
+
+<textarea
+
+class="form-control"
+
+rows="3"
+
+name="remarks">
+
+</textarea>
+
+</div>
+
+<button
+type="submit"
+class="btn btn-success w-100">
+
+Create Cluster
+
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+</div>
+{% endif %}
+
+{% if tab == 'reports' %}
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h6 class="mb-0">Reports</h6>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <a class="btn btn-outline-primary w-100"
+                   href="{{ url_for('admin_reports.reports_home') }}">
+                    Attendance Reports
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a class="btn btn-outline-danger w-100"
+                   href="{{ url_for('admin_reports.defaulters') }}">
+                    Defaulters
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a class="btn btn-outline-secondary w-100"
+                   href="{{ url_for('sessions.list_sessions', dept_id=department.id) }}">
+                    Sessions
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

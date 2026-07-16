@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Register — Attendance System{% endblock %}
+
+{% block auth_content %}
+<div class="container">
+    <div class="row justify-content-center py-5">
+        <div class="col-md-7 col-lg-6">
+
+            <!-- Logo -->
+            <div class="text-center mb-4">
+                <div class="auth-logo mb-3">
+                    <i class="bi bi-camera-video-fill text-primary" style="font-size: 3rem;"></i>
+                </div>
+                <h3 class="fw-bold">Student Registration</h3>
+                <p class="text-muted">
+                    Create your account. Admin will review and approve your registration.
+                </p>
+            </div>
+
+            <!-- Registration Card -->
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('auth.register') }}">
+
+                        <div class="row">
+                            <!-- Full Name -->
+                            <div class="col-md-6 mb-3">
+                                <label for="full_name" class="form-label">
+                                    <i class="bi bi-person"></i> Full Name *
+                                </label>
+                                <input type="text" class="form-control" id="full_name"
+                                       name="full_name" placeholder="John Doe"
+                                       value="{{ form_data.get('full_name', '') }}" required>
+                            </div>
+
+                            <!-- USN -->
+                            <div class="col-md-6 mb-3">
+                                <label for="usn" class="form-label">
+                                    <i class="bi bi-hash"></i> USN *
+                                </label>
+                                <input type="text" class="form-control" id="usn"
+                                       name="usn" placeholder="1BY23CS001"
+                                       value="{{ form_data.get('usn', '') }}"
+                                       style="text-transform: uppercase;" required>
+                            </div>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label">
+                                <i class="bi bi-envelope"></i> Email *
+                            </label>
+                            <input type="email" class="form-control" id="email"
+                                   name="email" placeholder="your.email@college.edu"
+                                   value="{{ form_data.get('email', '') }}" required>
+                        </div>
+
+                        <div class="row">
+                            <!-- Password -->
+                            <div class="col-md-6 mb-3">
+                                <label for="password" class="form-label">
+                                    <i class="bi bi-lock"></i> Password *
+                                </label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="password"
+                                           name="password" placeholder="Min 6 characters"
+                                           minlength="6" required>
+                                    <button class="btn btn-outline-secondary" type="button"
+                                            onclick="togglePassword('password', this)">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Confirm Password -->
+                            <div class="col-md-6 mb-3">
+                                <label for="confirm_password" class="form-label">
+                                    <i class="bi bi-lock-fill"></i> Confirm Password *
+                                </label>
+                                <input type="password" class="form-control" id="confirm_password"
+                                       name="confirm_password" placeholder="Re-enter password"
+                                       minlength="6" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Phone -->
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">
+                                    <i class="bi bi-telephone"></i> Phone
+                                </label>
+                                <input type="tel" class="form-control" id="phone"
+                                       name="phone" placeholder="+91 9876543210"
+                                       value="{{ form_data.get('phone', '') }}">
+                            </div>
+
+                            <!-- Department -->
+                            <div class="col-md-6 mb-3">
+                                <label for="department_id" class="form-label">
+                                    <i class="bi bi-building"></i> Department *
+                                </label>
+                                <select class="form-select" id="department_id"
+                                        name="department_id" required>
+                                    <option value="">Select Department</option>
+                                    {% for dept in departments %}
+                                    <option value="{{ dept.id }}"
+                                        {{ 'selected' if form_data.get('department_id') == dept.id|string }}>
+                                        {{ dept.code }} — {{ dept.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">
+                                <i class="bi bi-chat-text"></i> Additional Notes
+                            </label>
+                            <textarea class="form-control" id="notes" name="notes"
+                                      rows="2" placeholder="Any additional information...">{{ form_data.get('notes', '') }}</textarea>
+                        </div>
+
+                        <!-- Info Alert -->
+                        <div class="alert alert-info small mb-3">
+                            <i class="bi bi-info-circle"></i>
+                            After registration, your account will be <strong>pending admin approval</strong>.
+                            You will be able to log in once approved.
+                            Face enrollment will be done by the admin.
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-person-plus"></i> Register
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Login Link -->
+            <div class="text-center mt-3">
+                <p class="text-muted">
+                    Already have an account?
+                    <a href="{{ url_for('auth.login') }}" class="text-decoration-none fw-semibold">
+                        Sign In
+                    </a>
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+}
+
+// Password match validation
+document.getElementById('confirm_password').addEventListener('input', function() {
+    const password = document.getElementById('password').value;
+    if (this.value !== password) {
+        this.setCustomValidity('Passwords do not match');
+        this.classList.add('is-invalid');
+    } else {
+        this.setCustomValidity('');
+        this.classList.remove('is-invalid');
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,484 @@
+{% extends "base.html" %}
+{% block title %}Sessions{% endblock %}
+{% block page_title %}Sessions{% endblock %}
+
+{% block content %}
+
+<!-- Summary Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-3 p-2 bg-primary bg-opacity-10">
+          <i class="bi bi-calendar2-check fs-4 text-primary"></i>
+        </div>
+        <div>
+          <div class="fs-4 fw-bold">{{ total_count }}</div>
+          <div class="text-muted small">Total</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-3 p-2 bg-success bg-opacity-10">
+          <i class="bi bi-play-circle fs-4 text-success"></i>
+        </div>
+        <div>
+          <div class="fs-4 fw-bold text-success">{{ active_count }}</div>
+          <div class="text-muted small">Active</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-3 p-2 bg-info bg-opacity-10">
+          <i class="bi bi-clock fs-4 text-info"></i>
+        </div>
+        <div>
+          <div class="fs-4 fw-bold text-info">{{ scheduled_count }}</div>
+          <div class="text-muted small">Scheduled</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-3 p-2 bg-secondary bg-opacity-10">
+          <i class="bi bi-check2-circle fs-4 text-secondary"></i>
+        </div>
+        <div>
+          <div class="fs-4 fw-bold text-secondary">{{ completed_count }}</div>
+          <div class="text-muted small">Completed</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body">
+    <form method="GET" class="row g-2 align-items-end">
+      <div class="col-md-2">
+        <label class="form-label small fw-semibold text-muted">Date</label>
+        <input type="date" name="date" class="form-control form-control-sm"
+               value="{{ filters.date }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small fw-semibold text-muted">Department</label>
+        <select name="dept_id" class="form-select form-select-sm">
+          <option value="">All Departments</option>
+          {% for dept in departments %}
+            <option value="{{ dept.id }}" {% if filters.dept_id == dept.id|string %}selected{% endif %}>
+              {{ dept.code }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold text-muted">Section</label>
+        <select name="section_id" class="form-select form-select-sm">
+          <option value="">All Sections</option>
+          {% for sec in sections %}
+            <option value="{{ sec.id }}" {% if filters.section_id == sec.id|string %}selected{% endif %}>
+              {{ sec.dept_code }}-{{ sec.section_label }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small fw-semibold text-muted">Status</label>
+        <select name="status" class="form-select form-select-sm">
+          <option value="">All Statuses</option>
+          <option value="scheduled" {% if filters.status == 'scheduled' %}selected{% endif %}>Scheduled</option>
+          <option value="active" {% if filters.status == 'active' %}selected{% endif %}>Active</option>
+          <option value="completed" {% if filters.status == 'completed' %}selected{% endif %}>Completed</option>
+          <option value="dismissed" {% if filters.status == 'dismissed' %}selected{% endif %}>Dismissed</option>
+          <option value="cancelled" {% if filters.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-flex gap-2">
+        <button type="submit" class="btn btn-primary btn-sm flex-fill">
+          <i class="bi bi-funnel"></i> Filter
+        </button>
+        <a href="{{ url_for('sessions.list_sessions') }}" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-x-lg"></i>
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Department Navigation -->
+
+<!-- Department Navigation -->
+
+<div class="card border-0 shadow-sm mb-4">
+
+  <div class="card-header bg-white border-0">
+
+    <h5 class="mb-0 fw-bold">
+      Departments
+    </h5>
+
+  </div>
+
+  <div class="card-body">
+
+    <div class="row g-3">
+
+      {% for dept in department_overview %}
+
+      <div class="col-md-3">
+
+        <a href="{{ url_for(
+              'sessions.list_sessions',
+              date=filters.date,
+              dept_id=dept.id
+        ) }}"
+        class="text-decoration-none">
+
+          <div class="card border-0 shadow-sm h-100 session-nav-card">
+
+            <div class="card-body text-center">
+
+              <h5 class="fw-bold mb-2">
+                {{ dept.name }}
+              </h5>
+
+              <div class="text-muted small mb-2">
+                {{ dept.session_count }} Sessions
+              </div>
+
+              {% if dept.session_count > 0 %}
+
+                <span class="badge bg-success">
+                  Active Today
+                </span>
+
+              {% else %}
+
+                <span class="badge bg-light text-dark border">
+                  No Sessions
+                </span>
+
+              {% endif %}
+
+            </div>
+
+          </div>
+
+        </a>
+
+      </div>
+
+      {% endfor %}
+
+    </div>
+
+  </div>
+
+</div>
+
+
+{% if selected_department %}
+
+<div class="card border-0 shadow-sm mb-4">
+
+  <div class="card-header bg-white border-0">
+
+    <h5 class="mb-0 fw-bold">
+      Semesters
+    </h5>
+
+  </div>
+
+  <div class="card-body">
+
+    <div class="d-flex flex-wrap gap-2">
+
+      {% for sem in semester_overview %}
+
+      <a href="{{ url_for(
+            'sessions.list_sessions',
+            date=filters.date,
+            dept_id=selected_department,
+            semester=sem.sem_number
+      ) }}"
+      class="btn btn-outline-primary rounded-pill">
+
+        Sem {{ sem.sem_number }}
+
+        <span class="badge bg-primary ms-1">
+          {{ sem.session_count }}
+        </span>
+
+      </a>
+
+      {% endfor %}
+
+    </div>
+
+  </div>
+
+</div>
+
+{% endif %}
+
+<!-- Section Cards (was broken - fixed url_for) -->
+{% if selected_semester %}
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white">
+    <h6 class="mb-0">Sections</h6>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      {% for sec in section_overview %}
+      <div class="col-md-2">
+
+        <!-- FIX: pass all params through url_for, not mixed ?query string -->
+        <a href="{{ url_for('sessions.list_sessions',
+                      date=filters.date,
+                      dept_id=selected_department,
+                      semester=selected_semester,
+                      section_id=sec.id) }}"
+           class="text-decoration-none">
+
+          <div class="card border-0 shadow-sm text-center h-100
+                      {% if selected_section == sec.id %}border-primary border-2{% endif %}">
+            <div class="card-body">
+              <h6 class="fw-bold">{{ sec.name }}</h6>
+              <small class="text-muted">{{ sec.session_count }} Sessions</small>
+            </div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Action Buttons -->
+<div class="d-flex gap-2 mb-3 flex-wrap">
+  <a href="{{ url_for('sessions.create_session') }}"class="btn btn-success btn-sm"><i class="bi bi-plus-circle"></i> Create Session</a>
+  <form method="POST" action="{{ url_for('sessions.auto_assign_cameras') }}">
+    <button class="btn btn-outline-primary btn-sm">
+      <i class="bi bi-camera-video"></i> Auto-Assign Cameras
+    </button>
+  </form>
+</div>
+
+
+<!-- Sessions Table -->
+{% if show_sessions %}
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    {% if sessions %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">Time</th>
+            <th>Section</th>
+            <th>Subject</th>
+            <th>Faculty</th>
+            <th>Camera</th>
+            <th>Attendance</th>
+            <th>Status</th>
+            <th class="text-end pe-3">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in sessions %}
+          <tr class="{% if s.live_status == 'active' %}table-success{% endif %}">
+            <td class="ps-3">
+              <div class="fw-semibold">{{ s.start_time or '—' }}</div>
+              <div class="text-muted small">{{ s.session_date }}</div>
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border fw-semibold">
+                {{ s.section_names }}
+              </span>
+              {% if s.section_count > 1 %}
+
+                <div class="small text-muted">
+                  {{ s.section_count }} sections combined
+                </div>
+
+              {% endif %}
+            </td>
+            <td>
+              <div class="fw-semibold">{{ s.subject_code or '—' }}</div>
+              <div class="text-muted small">{{ s.subject_name or '' }}</div>
+              {% if s.session_type %}
+                <div class="mt-1">
+
+                  <span class="badge bg-light text-dark border">
+                    {{ s.session_type|title }}
+                  </span>
+
+                </div>
+              {% endif %}
+            </td>
+            <td>
+              <div class="small">{{ s.faculty_name or '—' }}</div>
+              {% if s.substitute_name %}
+              <div class="text-warning small"><i class="bi bi-arrow-repeat"></i> {{ s.substitute_name }}</div>
+              {% endif %}
+            </td>
+            <td>
+              {% if s.camera_name %}
+                <span class="badge bg-info text-dark">
+                  <i class="bi bi-camera-video"></i> {{ s.camera_name }}
+                </span>
+              {% else %}
+                <span class="text-muted small">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% set total = s.total_students or 0 %}
+              {% set present = s.present_count or 0 %}
+              {% if total > 0 %}
+                <div class="d-flex align-items-center gap-2">
+                  <div class="progress flex-fill" style="height:6px;min-width:60px">
+                    <div class="progress-bar bg-success"
+                         style="width:{{ ((present/total)*100)|round|int }}%"></div>
+                  </div>
+                  <span class="small text-nowrap">{{ present }}/{{ total }}</span>
+                </div>
+              {% else %}
+                <span class="text-muted small">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if s.live_status == 'active' %}
+                <span class="badge bg-success">
+                    <span class="live-dot"></span>
+                    Active
+                </span>
+              {% elif s.live_status == 'completed' %}
+                <span class="badge bg-secondary">Completed</span>
+              {% elif s.live_status == 'scheduled' %}
+                <span class="badge bg-primary">Scheduled</span>
+              {% elif s.live_status == 'dismissed' %}
+                <span class="badge bg-warning text-dark">Dismissed</span>
+              {% elif s.live_status == 'cancelled' %}
+                <span class="badge bg-dark">Cancelled</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ s.live_status }}</span>
+              {% endif %}
+            </td>
+            <td class="text-end pe-3">
+              <div class="d-flex gap-1 justify-content-end">
+                <a href="{{ url_for('sessions.session_detail', session_id=s.id) }}"
+                   class="btn btn-sm btn-outline-secondary" title="View Detail">
+                  <i class="bi bi-eye"></i>
+                </a>
+                {% if s.live_status == 'scheduled' %}
+                  <form method="POST" action="{{ url_for('sessions.open_session', session_id=s.id) }}" class="d-inline">
+                    <button class="btn btn-sm btn-success" title="Force Start">
+                      <i class="bi bi-play-fill"></i>
+                    </button>
+                  </form>
+                {% endif %}
+                {% if s.live_status == 'active' %}
+                  <form method="POST" action="{{ url_for('sessions.close_session', session_id=s.id) }}" class="d-inline">
+                    <button class="btn btn-sm btn-secondary" title="Force Close ">
+                      <i class="bi bi-stop-fill"></i>
+                    </button>
+                  </form>
+                {% endif %}
+                {% if s.live_status in ('scheduled', 'active') %}
+                  <button class="btn btn-sm btn-outline-warning"
+                          data-bs-toggle="modal"
+                          data-bs-target="#dismissModal"
+                          data-session-id="{{ s.id }}" title="Dismiss">
+                    <i class="bi bi-x-circle"></i>
+                  </button>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-calendar-x fs-1 d-block mb-2 opacity-25"></i>
+      <p class="mb-0">No sessions found for the selected filters.</p>
+      <p class="small">Try changing the date or creating today's sessions.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Dismiss Modal -->
+<div class="modal fade" id="dismissModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <form method="POST" id="dismissForm" action="">
+        <input type="hidden" name="action" value="dismissed">
+        <div class="modal-header">
+          <h6 class="modal-title">Dismiss Session</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label small">Reason (optional)</label>
+          <input type="text" name="reason" class="form-control" placeholder="e.g. Faculty absent">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-warning">Dismiss</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* .live-dot{
+    width:8px;
+    height:8px;
+    background: var(--bg);
+    background: var(--card);
+    color: var(--text);
+    border-color: var(--border);
+    border-radius:50%;
+    display:inline-block;
+    margin-right:6px;
+    animation:pulse 1s infinite;
+} */
+   
+.live-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#22c55e;
+  display:inline-block;
+  margin-right:6px;
+  animation:pulse 1s infinite;
+}
+</style> 
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('dismissModal').addEventListener('show.bs.modal', function(e) {
+  const btn = e.relatedTarget;
+  const sessionId = btn.dataset.sessionId;
+  document.getElementById('dismissForm').action = `/admin/sessions/${sessionId}/cancel`;
+});
+</script>
+{% endblock %}

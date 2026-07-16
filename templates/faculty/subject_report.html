@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Report — {{ info.subject_code }}{% endblock %}
+{% block page_title %}{{ info.subject_code }}: {{ info.subject_name }} — {{ info.dept_code }}-{{ info.section_label }}{% endblock %}
+
+{% block content %}
+<div class="mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <span class="text-muted">Period: {{ date_from }} to {{ date_to }}</span>
+        <span class="ms-3 text-muted">Sessions: <strong>{{ sessions|length }}</strong></span>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('faculty_reports.download_subject_excel', subject_id=subject_id, section_id=section_id, **{'from': date_from, 'to': date_to}) }}"
+           class="btn btn-sm btn-success">
+            <i class="bi bi-file-earmark-excel"></i> Download Excel
+        </a>
+        <a href="{{ url_for('faculty_reports.reports_home') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<!-- Date Filter -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body py-2">
+        <form method="GET" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small mb-1">From</label>
+                <input type="date" class="form-control form-control-sm" name="from" value="{{ date_from }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small mb-1">To</label>
+                <input type="date" class="form-control form-control-sm" name="to" value="{{ date_to }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-funnel"></i> Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Report Table -->
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle small">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>USN</th>
+                        <th>Name</th>
+                        <!-- Session date columns -->
+                        {% for sess in sessions %}
+                        <th class="text-center" style="min-width:40px;" title="{{ sess.session_date }} {{ sess.start_time }}">
+                            <small>{{ sess.session_date.strftime('%d/%m') if sess.session_date is not string else sess.session_date[5:] }}</small>
+                        </th>
+                        {% endfor %}
+                        <th>Total</th>
+                        <th>Present</th>
+                        <th>%</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in report_data %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><code>{{ r.usn }}</code></td>
+                        <td>{{ r.name }}</td>
+                        {% for sess in sessions %}
+                        {% set status = r.session_data.get(sess.id, 'absent') %}
+                        <td class="text-center">
+                            {% if status == 'present' %}
+                            <span class="text-success fw-bold">P</span>
+                            {% else %}
+                            <span class="text-danger">A</span>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                        <td>{{ r.total }}</td>
+                        <td class="text-success fw-bold">{{ r.present }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'danger' if r.percentage < 75 else 'warning' if r.percentage < 85 else 'success' }}">
+                                {{ r.percentage }}%
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

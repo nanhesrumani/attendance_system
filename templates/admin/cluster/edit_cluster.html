@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}
+Edit Cluster
+{% endblock %}
+
+{% block page_title %}
+Edit Cluster
+{% endblock %}
+
+{% block content %}
+
+<div class="card shadow-sm">
+
+<div class="card-header">
+
+<h4>
+
+Edit Cluster
+
+</h4>
+
+</div>
+
+<div class="card-body">
+
+<form
+method="POST"
+action="{{ url_for('academic.update_cluster',
+cluster_id=cluster.id) }}">
+
+<div class="mb-3">
+
+<label>
+
+Cluster Name
+
+</label>
+
+<input
+
+class="form-control"
+
+name="cluster_name"
+
+value="{{cluster.cluster_name}}"
+
+required>
+
+</div>
+
+<div class="mb-3">
+
+<label>
+
+Cluster Head
+
+</label>
+
+<select
+class="form-select"
+name="cluster_head">
+
+<option value="">
+
+Select Head
+
+</option>
+
+{% for f in faculty %}
+
+<option
+value="{{f.id}}"
+
+{% if cluster.cluster_head_faculty_id==f.id %}
+selected
+{% endif %}>
+
+{{f.full_name}}
+
+</option>
+
+{% endfor %}
+
+</select>
+
+</div>
+
+<div class="mb-3">
+
+<label>
+
+Remarks
+
+</label>
+
+<textarea
+
+class="form-control"
+
+rows="4"
+
+name="remarks">{{cluster.remarks}}</textarea>
+
+</div>
+
+<button
+class="btn btn-primary">
+
+Save Changes
+
+</button>
+
+<a
+href="{{ url_for('academic.cluster_workspace',
+cluster_id=cluster.id) }}"
+class="btn btn-secondary">
+
+Cancel
+
+</a>
+
+</form>
+
+</div>
+
+</div>
+
+{% endblock %}

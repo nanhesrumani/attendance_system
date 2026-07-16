@@ -1,0 +1,388 @@
+{% extends "base.html" %}
+{% block title %}Elective / Merged Groups{% endblock %}
+{% block page_title %}Elective &amp; Merged Session Groups{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <h4 class="mb-1">Elective &amp; Split Groups</h4>
+      <div class="text-muted small">
+        Use this for any case where the attendance roster is NOT just "everyone in one section":
+        professional electives (half of A + half of B, same cluster), open electives
+        (students shuffled in from anywhere), and split-groups (one section divided into
+        two labs). Create the group, enroll its students once, then pick this group
+        (instead of a section) when creating its Session.
+      </div>
+    </div>
+  </div>
+
+  <ul class="nav nav-tabs mb-3" id="typeTabs">
+    <li class="nav-item">
+      <button class="nav-link active" data-type="professional_elective" onclick="switchTab(this)">
+        Professional Electives (cluster)
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" data-type="open_elective" onclick="switchTab(this)">
+        Open Electives (cross-section)
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" data-type="split_group" onclick="switchTab(this)">
+        Split Groups (one section &rarr; 2 labs)
+      </button>
+    </li>
+    <!-- templates/admin/electives.html — nav tabs -->
+    <li class="nav-item">
+      <button class="nav-link" data-type="ability_enhancement" onclick="switchTab(this)">
+        Ability / Skill Enhancement (AEC/SEC)
+      </button>
+    </li>
+  </ul>
+
+  <div class="row">
+    <!-- Create form -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h6 class="fw-bold mb-3" id="formTitle">New Professional Elective Group</h6>
+          <form id="createForm">
+            <input type="hidden" name="group_type" id="group_type" value="professional_elective">
+            <input type="hidden" name="academic_period_id" value="{{ period.id if period else '' }}">
+
+            <div class="mb-2" id="clusterField">
+              <label class="form-label small fw-semibold">Cluster</label>
+              <select name="cluster_id" class="form-select form-select-sm">
+                <option value="">Select cluster</option>
+                {% for c in clusters %}
+                <option value="{{ c.id }}">{{ c.code }} - {{ c.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="mb-2" id="splitField" style="display:none;">
+              <label class="form-label small fw-semibold">Parent Section (being split)</label>
+              <select
+                  id="aecParentSection"
+                  name="parent_section_id"
+                  class="form-select form-select-sm">
+                <option value="">Select section</option>
+                {% for s in sections %}
+                <option value="{{ s.id }}">{{ s.dept_code }} Sem{{ s.sem_number }} {{ s.section_label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- inside the create form, alongside clusterField / splitField -->
+            <div class="mb-2" id="aecField" style="display:none;">
+              <label class="form-label small fw-semibold">Department</label>
+              <select name="department_id" class="form-select form-select-sm">
+                <option value="">Select department</option>
+                {% for d in departments %}
+                <option value="{{ d.id }}">{{ d.code }} - {{ d.name }}</option>
+                {% endfor %}
+              </select>
+
+              <div class="form-check form-switch mt-2">
+                <input class="form-check-input" type="checkbox" id="mergeSections" name="merge_sections" value="1">
+                <label class="form-check-label small" for="mergeSections">
+                  Merge sections into one class
+                </label>
+              </div>
+              <div class="form-text">
+                Off: one class per section (e.g. CSE 6A DevOps stays separate from 6B DevOps).
+                On: one shared class across all sections that picked this subject.
+              </div>
+
+              <div id="aecSectionField" class="mt-2">
+                <label class="form-label small fw-semibold">Section (leave "merge" off)</label>
+                <select name="parent_section_id" id="aecParentSection" class="form-select form-select-sm">
+                  <option value="">Select section</option>
+                  {% for s in sections %}
+                  <option value="{{ s.id }}">{{ s.dept_code }} Sem{{ s.sem_number }} {{ s.section_label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+
+            <div class="mb-2">
+              <label class="form-label small fw-semibold">Subject offered</label>
+              <select name="subject_id" class="form-select form-select-sm" required>
+                <option value="">Select subject</option>
+                {% for s in subjects %}
+                <option value="{{ s.id }}">{{ s.code }} - {{ s.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label small fw-semibold">Faculty</label>
+              <select name="faculty_id" class="form-select form-select-sm">
+                <option value="">Unassigned</option>
+                {% for f in faculty_list %}
+                <option value="{{ f.id }}">{{ f.full_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Max capacity (optional)</label>
+              <input type="number" name="max_capacity" class="form-control form-control-sm" min="1">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-sm w-100">
+              <i class="bi bi-plus-circle"></i> Create Group
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Existing groups + roster -->
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold mb-0">Existing Groups</h6>
+            <button class="btn btn-sm btn-outline-secondary" onclick="loadGroups()">
+              <i class="bi bi-arrow-repeat"></i> Refresh
+            </button>
+          </div>
+          <div id="groupsList"><div class="text-muted small">Loading…</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Roster modal -->
+<div class="modal fade" id="rosterModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="rosterModalTitle">Roster</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+
+        <div class="row g-2 mb-3">
+          <div class="col-md-5">
+            <select id="addSectionFilter" class="form-select form-select-sm">
+              <option value="">Filter by home section (optional)</option>
+              {% for s in sections %}
+              <option value="{{ s.id }}">{{ s.dept_code }} Sem{{ s.sem_number }} {{ s.section_label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-5">
+            <input id="addSearch" class="form-control form-control-sm" placeholder="Search name or USN…">
+          </div>
+          <div class="col-md-2">
+            <button class="btn btn-sm btn-outline-primary w-100" onclick="searchEligible()">Search</button>
+          </div>
+        </div>
+
+        <div id="eligibleResults" class="mb-3" style="max-height:180px; overflow-y:auto;"></div>
+
+        <hr>
+        <h6 class="small fw-bold text-muted">CURRENT ROSTER (<span id="rosterCount">0</span>)</h6>
+        <div id="currentRoster"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light btn-sm" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let activeType = "professional_elective";
+let activeGroupId = null;
+let rosterModal;
+
+document.addEventListener("DOMContentLoaded", function () {
+  rosterModal = new bootstrap.Modal(document.getElementById("rosterModal"));
+  loadGroups();
+  document.getElementById("createForm").addEventListener("submit", createGroup);
+});
+
+const mergeToggle = document.getElementById("mergeSections");
+
+if (mergeToggle) {
+    mergeToggle.addEventListener("change", function () {
+
+        document.getElementById("aecSectionField").style.display =
+            this.checked ? "none" : "";
+
+    });
+}
+
+function switchTab(btn) {
+  document.querySelectorAll("#typeTabs .nav-link").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  activeType = btn.dataset.type;
+  document.getElementById("group_type").value = activeType;
+
+  const titles = {
+    professional_elective: "New Professional Elective Group",
+    open_elective: "New Open Elective Group",
+    split_group: "New Split Group",
+    ability_enhancement: "New Ability / Skill Enhancement Group"
+  };
+  document.getElementById("formTitle").textContent = titles[activeType];
+  document.getElementById("clusterField").style.display = activeType === "professional_elective" ? "" : "none";
+  document.getElementById("splitField").style.display = activeType === "split_group" ? "" : "none";
+  document.getElementById("aecField").style.display = activeType === "ability_enhancement" ? "" : "none";
+
+  loadGroups();
+}
+
+function createGroup(e) {
+
+    e.preventDefault();
+
+    const form = e.target;
+
+    if (
+        activeType === "ability_enhancement" &&
+        document.getElementById("mergeSections").checked
+    ) {
+        form.querySelector('[name="parent_section_id"]').value = "";
+    }
+
+    const body = new URLSearchParams(new FormData(form));
+  fetch("{{ url_for('electives.create_group_route') }}", { method: "POST", body })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        showToast("Group created.", "success");
+        form.reset();
+        document.getElementById("group_type").value = activeType;
+        loadGroups();
+      } else {
+        showToast(data.message || "Could not create group.", "danger");
+      }
+    })
+    .catch(() => showToast("Request failed.", "danger"));
+}
+
+function loadGroups() {
+  const list = document.getElementById("groupsList");
+  list.innerHTML = '<div class="text-muted small">Loading…</div>';
+  const period = "{{ period.id if period else '' }}";
+  fetch(`{{ url_for('electives.list_groups') }}?group_type=${activeType}&academic_period_id=${period}`)
+    .then(r => r.json())
+    .then(data => renderGroups(data.groups || []))
+    .catch(() => list.innerHTML = '<div class="text-danger small">Failed to load.</div>');
+}
+
+function renderGroups(groups) {
+  const list = document.getElementById("groupsList");
+  if (!groups.length) {
+    list.innerHTML = '<div class="text-muted small py-4 text-center">No groups of this type yet.</div>';
+    return;
+  }
+  list.innerHTML = groups.map(g => `
+    <div class="border rounded p-3 mb-2 d-flex justify-content-between align-items-center">
+      <div>
+        <div class="fw-semibold">${escapeHtml(g.subject_name)} <span class="text-muted small">(${escapeHtml(g.subject_code)})</span></div>
+        <div class="text-muted small">
+          ${g.cluster_code ? "Cluster " + escapeHtml(g.cluster_code) + " &middot; " : ""}
+          Code: ${escapeHtml(g.group_code)} &middot;
+          ${g.enrolled_count} enrolled${g.max_capacity ? " / " + g.max_capacity : ""}
+        </div>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-sm btn-outline-primary" onclick='openRoster(${g.id}, ${JSON.stringify(g.subject_name)})'>
+          <i class="bi bi-people"></i> Roster
+        </button>
+        <button class="btn btn-sm btn-outline-danger" onclick="deactivateGroup(${g.id})">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function deactivateGroup(groupId) {
+  if (!confirm("Deactivate this group? Its future sessions will lose their roster source.")) return;
+  fetch(`/admin/electives/groups/${groupId}/deactivate`, { method: "POST" })
+    .then(r => r.json())
+    .then(data => { if (data.success) loadGroups(); else showToast(data.message, "danger"); });
+}
+
+function openRoster(groupId, subjectName) {
+  activeGroupId = groupId;
+  document.getElementById("rosterModalTitle").textContent = "Roster — " + subjectName;
+  document.getElementById("eligibleResults").innerHTML = "";
+  document.getElementById("addSearch").value = "";
+  loadRoster();
+  rosterModal.show();
+}
+
+function loadRoster() {
+  fetch(`/admin/electives/groups/${activeGroupId}/roster`)
+    .then(r => r.json())
+    .then(data => {
+      const roster = data.roster || [];
+      document.getElementById("rosterCount").textContent = roster.length;
+      document.getElementById("currentRoster").innerHTML = roster.length
+        ? roster.map(s => `
+          <div class="d-flex justify-content-between align-items-center border-bottom py-1">
+            <span>${escapeHtml(s.name)} <span class="text-muted small">(${escapeHtml(s.usn)})</span></span>
+            <button class="btn btn-sm btn-link text-danger p-0" onclick="removeMember(${s.id})">Remove</button>
+          </div>`).join("")
+        : '<div class="text-muted small">No students enrolled yet.</div>';
+    });
+}
+
+function searchEligible() {
+  const sectionId = document.getElementById("addSectionFilter").value;
+  const q = document.getElementById("addSearch").value.trim();
+  const params = new URLSearchParams();
+  if (sectionId) params.set("section_id", sectionId);
+  if (q) params.set("q", q);
+  fetch(`{{ url_for('electives.eligible_students') }}?${params}`)
+    .then(r => r.json())
+    .then(data => {
+      const results = data.students || [];
+      document.getElementById("eligibleResults").innerHTML = results.length
+        ? results.map(s => `
+          <div class="d-flex justify-content-between align-items-center border-bottom py-1">
+            <span>${escapeHtml(s.name)} <span class="text-muted small">(${escapeHtml(s.usn)})</span></span>
+            <button class="btn btn-sm btn-outline-success py-0" onclick="addMember(${s.id})">+ Add</button>
+          </div>`).join("")
+        : '<div class="text-muted small">No matches.</div>';
+    });
+}
+
+function addMember(studentId) {
+  const body = new URLSearchParams();
+  body.set("student_ids", studentId);
+  fetch(`/admin/electives/groups/${activeGroupId}/enroll`, { method: "POST", body })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) { showToast("Added.", "success"); loadRoster(); }
+      else showToast((data.skipped && data.skipped[0] && data.skipped[0].reason) || "Could not add.", "danger");
+    });
+}
+
+function removeMember(studentId) {
+  fetch(`/admin/electives/groups/${activeGroupId}/remove/${studentId}`, { method: "POST" })
+    .then(r => r.json())
+    .then(data => { if (data.success) loadRoster(); else showToast(data.message, "danger"); });
+}
+
+function escapeHtml(str) {
+  const d = document.createElement("div");
+  d.textContent = str == null ? "" : str;
+  return d.innerHTML;
+}
+</script>
+{% endblock %}

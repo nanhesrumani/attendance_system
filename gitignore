@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.Python
+venv/
+env/
+.venv/
+
+# Secrets / config
+.env
+.env.*
+!.env.example
+credentials.json
+
+# App runtime data (don't commit student photos / face embeddings / logs)
+dataset/images/*
+dataset/embeddings/*
+uploads/*
+!dataset/images/.gitkeep
+!dataset/embeddings/.gitkeep
+!uploads/.gitkeep
+*.log
+attendance_system.log
+
+# Anti-spoof / insightface model weights (large binaries — download at
+# deploy time instead of committing, see DEPLOYMENT_GUIDE.md)
+recognition/anti_spoof_models/*.pth
+recognition/anti_spoof_models/*.onnx
+*.onnx
+*.pth
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
