@@ -1,44 +1,56 @@
-# ---- Web framework ----
-flask==3.0.3
-flask-login==0.6.3
-werkzeug==3.0.3
-gunicorn==22.0.0
-python-dotenv==1.0.1
+# ========================================
+# AI Attendance System - Requirements
+# ========================================
 
-# ---- Database ----
-mysql-connector-python==8.4.0
+# --- Core Web Framework ---
+Flask==3.0.0
+Flask-Login==0.6.3
+Flask-WTF==1.2.1
+WTForms==3.1.1
 
-# ---- Auth / security ----
-bcrypt==4.1.3
+# --- Database ---
+mysql-connector-python==8.2.0
+PyMySQL==1.1.0
 
-# ---- Scheduler ----
-apscheduler==3.10.4
+# --- Password Hashing ---
+bcrypt==4.1.2
 
-# ---- Data handling ----
-pandas==2.2.2
-numpy==1.26.4
-openpyxl==3.1.2
-pdfplumber==0.11.1
-rapidfuzz==3.9.4
+# --- Scheduling ---
+APScheduler==3.10.4
 
-# ---- Image / vision ----
-opencv-python-headless==4.9.0.80
-pillow==10.3.0
-pillow-heif==0.16.0
-
-# ---- Face recognition / anti-spoof ----
+# --- Face Recognition (NO TORCH) ---
 insightface==0.7.3
-onnxruntime==1.18.0
-torch==2.3.1+cpu
---extra-index-url https://download.pytorch.org/whl/cpu
+onnxruntime==1.16.3
+# If you have NVIDIA GPU + CUDA 11.x installed, use this INSTEAD of onnxruntime:
+# onnxruntime-gpu==1.16.3
 
-# ---- Google Sheets integration ----
-google-api-python-client==2.133.0
-google-auth==2.30.0
-google-auth-httplib2==0.2.0
+# --- Image Processing ---
+opencv-python==4.9.0.80
+numpy==1.26.4
+Pillow==10.2.0
+pillow-heif==0.14.0
 
-# ---- OpenAI ----
-openai==1.35.3
+# --- Google Sheets Integration ---
+google-api-python-client==2.111.0
+google-auth==2.25.2
+google-auth-oauthlib==1.2.0
 
-# ---- Misc ----
-requests==2.32.3
+# --- Data Processing ---
+pandas==2.1.4
+
+# --- HTTP Requests ---
+requests==2.31.0
+
+# --- Reports ---
+openpyxl==3.1.2
+reportlab==4.0.8
+
+# --- Utilities ---
+python-dotenv==1.0.0
+
+# pytesseract>=0.3.10
+# Pillow>=10.0.0
+# opencv-python>=4.8.0
+
+anthropic>=0.25.0
+rapidfuzz>=3.0.0

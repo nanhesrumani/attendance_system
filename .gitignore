@@ -1,37 +1,192 @@
-# Python
-__pycache__/
-*.pyc
+==========================================
+PYTHON
+==========================================
+
+pycache/
+*.py[cod]
+*$py.class
 *.pyo
-*.egg-info/
-.Python
+*.pyd
+*.so
+
+==========================================
+VIRTUAL ENVIRONMENTS
+==========================================
+
 venv/
 env/
 .venv/
+ENV/
+env.bak/
+venv.bak/
 
-# Secrets / config
+==========================================
+ENVIRONMENT VARIABLES & SECRETS
+==========================================
+
 .env
 .env.*
-!.env.example
 credentials.json
+google_credentials.json
+service_account.json
 
-# App runtime data (don't commit student photos / face embeddings / logs)
-dataset/images/**
-dataset/embeddings/**
-uploads/**
-!dataset/images/.gitkeep
-!dataset/embeddings/.gitkeep
-!uploads/.gitkeep
-*.log
+==========================================
+LOG FILES
+==========================================
+
+.log
+logs/
 attendance_system.log
+attendance_system/.log
 
-# Anti-spoof / insightface model weights (large binaries — download at
-# deploy time instead of committing, see DEPLOYMENT_GUIDE.md)
-recognition/anti_spoof_models/*.pth
-recognition/anti_spoof_models/*.onnx
+==========================================
+PYTHON BUILD FILES
+==========================================
+
+.Python
+build/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+
+==========================================
+FLASK
+==========================================
+
+instance/
+.webassets-cache
+
+==========================================
+TEST / CACHE
+==========================================
+
+.pytest_cache/
+.cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.pytype/
+.hypothesis/
+
+==========================================
+JUPYTER
+==========================================
+
+.ipynb_checkpoints
+
+==========================================
+IDE
+==========================================
+
+.vscode/
+.idea/
+.spyproject
+.spyderproject
+.ropeproject
+
+==========================================
+OS FILES
+==========================================
+
+Thumbs.db
+.DS_Store
+
+==========================================
+DATASET (FACE IMAGES)
+==========================================
+
+dataset/images/
+dataset/faces/
+dataset/raw/
+dataset/uploads/
+
+==========================================
+FACE EMBEDDINGS
+==========================================
+
+dataset/embeddings/
+dataset/*.npz
+*.npz
+
+==========================================
+ATTENDANCE EXPORTS
+==========================================
+
+uploads/
+static/uploads/
+exports/
+reports/
+attendance_reports/
+
+==========================================
+MODEL FILES
+==========================================
+
 *.onnx
 *.pth
+*.pt
+anti_spoof_models/
+insightface_models/
+models/
 
-# OS / editor
-.DS_Store
-.idea/
-.vscode/
+==========================================
+CAMERA RECORDINGS
+==========================================
+
+recordings/
+captures/
+snapshots/
+
+==========================================
+DATABASE BACKUPS
+==========================================
+
+*.sql
+*.sqlite3
+*.db
+
+==========================================
+DOCKER
+==========================================
+
+docker-data/
+docker-volumes/
+
+==========================================
+JENKINS
+==========================================
+
+.jenkins/
+
+==========================================
+TEMP FILES
+==========================================
+
+*.tmp
+*.temp
+*.bak
+*.swp
+
+==========================================
+CURSOR AI
+==========================================
+
+.cursorignore
+.cursorindexingignore

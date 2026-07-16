@@ -1,19 +1,65 @@
+# docker-compose.yml
+version: "3.9"
+
 services:
-  web:
-    build: .
-    image: attendance-system:latest
+  db:
+    image: mysql:8.0
+    container_name: attendance_db
     restart: unless-stopped
-    env_file:
-      - .env
-    ports:
-      - "127.0.0.1:5000:5000"   # nginx (on the host) proxies to this
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+      MYSQL_DATABASE: ${DB_NAME}
     volumes:
-      - ./dataset:/app/dataset
-      - ./uploads:/app/uploads
-      - ./credentials.json:/app/credentials.json:ro
-      - ./recognition/anti_spoof_models:/app/recognition/anti_spoof_models:ro
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+      - db_data:/var/lib/mysql
+      - ./sqlstucture.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASS}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - attendance_net
+
+  app:
+    build:
+      context: ./attendance_system
+      dockerfile: Dockerfile
+    container_name: attendance_app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - attendance_system/.env
+    environment:
+      DB_HOST: db          # override localhost → service name
+      DB_PORT: 3306
+    volumes:
+      - uploads_data:/app/static/uploads
+      - embeddings_data:/app/dataset/embeddings
+    ports:
+      - "5000:5000"
+    networks:
+      - attendance_net
+
+  nginx:
+    image: nginx:alpine
+    container_name: attendance_nginx
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - attendance_net
+
+volumes:
+  db_data:
+  uploads_data:
+  embeddings_data:
+
+networks:
+  attendance_net:
+    driver: bridge
