@@ -15,8 +15,8 @@ env/
 credentials.json
 
 # App runtime data (don't commit student photos / face embeddings / logs)
-dataset/images/*
-dataset/embeddings/*
+dataset/images
+dataset/embeddings
 uploads/*
 !dataset/images/.gitkeep
 !dataset/embeddings/.gitkeep
